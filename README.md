@@ -3,7 +3,7 @@ The purpose of this repo is to provide a centrialized place to store Factorio ma
 
 Category | shortname | targeted production
 -----|-----|-----
-Red Science | redsci | 240k/m/TBD
+Red Science | redsci | 300k/m
 Green Science | greensci | TBD
 Blue Science | bluesci | TBD
 Grey Science | greysci | TBD
