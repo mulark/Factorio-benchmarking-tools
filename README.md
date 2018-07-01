@@ -1,16 +1,16 @@
 The purpose of this repo is to provide a centrialized place to store Factorio maps that have been and will be used for performance testing reasons. Additional designs are welcome.
 
 
-Category | shortname | targeted production
------|-----|-----
-Red Science | redsci | 300k/m
-Green Science | greensci | TBD
-Blue Science | bluesci | TBD
-Grey Science | greysci | TBD
-Purple Science | purplesci | TBD
-Yellow Science | yellowsci | TBD
-White Science | whitesci | TBD
-6-Science | allsci | 5k/m / TBD
+Category | shortname | targeted production | Performance Results
+-----|-----|-----|-----
+Red Science | redsci | 300k/m | [Data](https://github.com/mulark/factorio-map-archive/blob/master/maps/redsci/redsci%20results.csv)
+Green Science | greensci | TBD |
+Blue Science | bluesci | TBD |
+Grey Science | greysci | TBD |
+Purple Science | purplesci | TBD |
+Yellow Science | yellowsci | TBD |
+White Science | whitesci | TBD |
+6-Science | allsci | 5k/m / TBD |
 
 **Naming Schema:**
 * {category shortname}.{design number}.{minor revision}
