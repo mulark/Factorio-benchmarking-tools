@@ -7,8 +7,8 @@ Red Science | redsci | 240k/m/TBD
 Green Science | greensci | TBD
 Blue Science | bluesci | TBD
 Grey Science | greysci | TBD
-Purple Science | purpsci | TBD
-Yellow Science | yellsci | TBD
+Purple Science | purplesci | TBD
+Yellow Science | yellowsci | TBD
 White Science | whitesci | TBD
 6-Science | allsci | 5k/m / TBD
 
