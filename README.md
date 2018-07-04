@@ -3,7 +3,7 @@ The purpose of this repo is to provide a centrialized place to store Factorio ma
 
 Category | shortname | targeted production | Performance Results
 -----|-----|-----|-----
-Red Science | redsci | 300k/m | [Data](https://github.com/mulark/factorio-map-archive/blob/master/maps/redsci/redsci%20results.csv)
+Red Science | redsci | 300k/m | [Data](https://github.com/mulark/factorio-map-archive/blob/master/maps/redsci/redsci%20results.md)
 Green Science | greensci | TBD |
 Blue Science | bluesci | TBD |
 Grey Science | greysci | TBD |
