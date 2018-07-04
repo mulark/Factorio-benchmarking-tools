@@ -1,4 +1,4 @@
-The purpose of this repo is to provide a centrialized place to store Factorio maps that have been and will be used for performance testing reasons. Additional designs are welcome.
+The purpose of this repo is to provide a centrialized place to store Factorio maps that have been and will be used for performance testing reasons. Additional designs are welcome. Submissions welcomed via pull request (pull the base map and scale your design to the targeted production) or issue (submit a blueprint string, and I will adapt it to the testing scenario).
 
 
 Category | shortname | targeted production | Performance Results | Map descriptions
