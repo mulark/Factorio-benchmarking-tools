@@ -26,7 +26,7 @@ More categories and maps by suggestion
 * You may extend the resources or water further to the north or south as needed for designs (oil must remain the same richness), but not east or west. You may not use resources outside the vertical columns of resources.
 * Pollution must remain disabled.
 * Biters must remain disabled.
-* If trains are used, you may not use vertical train stations on the resource patches themselves (since in the game, there are no resources patches that can be hundreds of chunks long). Horizontal stations are allowed, but must be limited to one resource per train.
+* If trains are used, you may not use vertical train stations on the resource patches themselves (since in the game, there are no resources patches that can be hundreds of chunks long). Horizontal stations are allowed, but must be limited to one resource per train stop. Multiple stops can be used for 1 train and many resources.
 * Factorio version 0.16.51 or any later stable 0.16 version may be used. 0.17 will be evaluated when it is released. 
 * You may use the vanilla infinity chest to void the final product. The 6-Science category must be researching worker robots speed, no voiding may be used in this category.
 * You may not used the infinity chest to create items for any of the science categories. They must be mined and processed.
