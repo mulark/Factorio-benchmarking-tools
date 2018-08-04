@@ -1,0 +1,9 @@
+map_name,run_index,startup_time,end_time,avg_ms,min_ms,max_ms,ticks,execution_time,effective_UPS,factorio_version,executable_type
+rocketfuel.v1.zip,1,1.898,151.859,5.956,5.818,9.080,25000,148894.391,167.9000,0.16.51,headless
+rocketfuel.v1.zip,2,1.665,151.819,5.964,5.808,8.426,25000,149090.564,167.6000,0.16.51,headless
+rocketfuel.v1.zip,3,1.662,149.969,5.887,5.755,8.106,25000,147179.668,169.8000,0.16.51,headless
+rocketfuel.v1.zip,4,1.640,150.132,5.895,5.762,8.096,25000,147371.483,169.6000,0.16.51,headless
+rocketfuel.v2.zip,1,1.621,132.340,5.184,5.042,7.307,25000,129608.252,192.8000,0.16.51,headless
+rocketfuel.v2.zip,2,1.628,132.091,5.177,5.036,7.349,25000,129429.152,193.1000,0.16.51,headless
+rocketfuel.v2.zip,3,1.624,147.509,5.794,5.648,7.294,25000,144850.510,172.5000,0.16.51,headless
+rocketfuel.v2.zip,4,1.628,133.516,5.231,5.081,7.393,25000,130778.294,191.1000,0.16.51,headless
