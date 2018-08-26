@@ -21,7 +21,7 @@ Description should be added to the category description file, describing the gen
 More categories and maps by suggestion
 
 **Generic RULES:**
-* Mining productivity 1000 and Worker robots speed 25 are researched and may not increased further.
+* Mining productivity can be any level desired less than 10,000 (as there is negative scaling the higher you go, belts are more affected than chests, for instance) and Worker robots speed 25 may not increased further.
 * You may use landfill.
 * You may extend the resources or water further to the north or south as needed for designs (oil must remain the same richness), but not east or west. You may not use resources outside the vertical columns of resources.
 * Pollution must remain disabled.
