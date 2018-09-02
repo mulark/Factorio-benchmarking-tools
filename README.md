@@ -1,5 +1,7 @@
 The purpose of this repo is to provide a centrialized place to store Factorio maps that have been and will be used for performance testing reasons. Additional designs are welcome. Submissions welcomed via pull request (pull the base map and scale your design to the targeted production) or issue (submit a blueprint string, and I will adapt it to the testing scenario).
 
+Also in the repo is a lua script to rapidly copy entities from one area to another. Use the base.v2.0 map and build your designs to the north of the hazard concrete. Once 1 copy is built, set the tile_paste_length and times_to_paste parameters to the desired values. It will then copy most every entity including cars, fuel, modules, items in inventories, inserters, belts, train schedules, circuit networks, and everything I've found to be needed to test a design. However, I can't possibly test every design, so if you have one that breaks it, send it over.
+
 
 Category | shortname | targeted production | Performance Results | Map descriptions
 -----|-----|-----|-----|-----
