@@ -1,8 +1,8 @@
 /c     
 local surface=game.player.surface
-local tile_paste_length = 82
+local tile_paste_length = 64
 local start_tile=0
-local times_to_paste=40
+local times_to_paste=5
 local start_tick=game.tick
 local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1000, start_tile}}, force="player"})
 local first_run = true
@@ -99,9 +99,6 @@ script.on_event(defines.events.on_tick, function(event)
                                 
                             end
                         end
-                    if (current_paste == (times_to_paste + 1)) then
-                        first_run = false
-                    end
                 end
                
                 if (game.tick == (start_tick + ((current_paste + 1) * ticks_per_paste))) then
@@ -153,7 +150,10 @@ script.on_event(defines.events.on_tick, function(event)
                             end
                         end
                 end
-            end
-   
+        end
+                  if (game.tick == (start_tick + (times_to_paste*ticks_per_paste) + 60 )) then
+                    game.players[1].force.chart_all()
+                    first_run = false
+               end
     end
 end);
