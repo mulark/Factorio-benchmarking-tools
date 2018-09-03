@@ -2,11 +2,11 @@
 local surface=game.player.surface
 local tile_paste_length = 64
 local start_tile=0
-local times_to_paste=5
+local times_to_paste=1
 local start_tick=game.tick
 local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1000, start_tile}}, force="player"})
 local first_run = true
-local ticks_per_paste = 40
+local ticks_per_paste = 2
 
 local function has_value (val, tab)
     for index, value in ipairs(tab) do
@@ -29,6 +29,7 @@ script.on_event(defines.events.on_tick, function(event)
                     ent.destroy()
                 end
             end
+            game.forces.player.chart(surface, {{x = -500, y = (start_tile-(tile_paste_length*(times_to_paste+1)))}, {x = 500, y = (start_tile-tile_paste_length)}})
         end
         for current_paste = 1, times_to_paste do
                 if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
@@ -40,6 +41,10 @@ script.on_event(defines.events.on_tick, function(event)
                                     surface.create_entity{name = ent.name, position={ent.position.x+0, ent.position.y-(tile_paste_length*current_paste)}, direction=ent.direction, force="player"}
                                 end
                                 local newent = surface.find_entity(ent.name, {ent.position.x+0, ent.position.y-(tile_paste_length*current_paste)})
+                                if (newent.type == "loader") then
+                                    newent.loader_type = ent.loader_type
+                                    newent.direction = ent.direction
+                                end
                                 newent.copy_settings(ent)
                                 newent.orientation = ent.orientation
                                 if (ent.get_module_inventory()) then
@@ -58,11 +63,11 @@ script.on_event(defines.events.on_tick, function(event)
                                     end
                                 end
                                 if (ent.get_inventory(defines.inventory.chest)) then
-                                    for k=1,#ent.get_inventory(defines.inventory.chest) do
-                                        if (ent.get_inventory(defines.inventory.chest)[k].valid_for_read) then
-                                            local inventory = ent.get_inventory(defines.inventory.chest)
-                                            local itemname = inventory[k].name
-                                            local itemamount = inventory[k].count
+                                    local chest_inventory = ent.get_inventory(defines.inventory.chest)
+                                    for k=1,#chest_inventory do
+                                        if (chest_inventory[k].valid_for_read) then
+                                            local itemname = chest_inventory[k].name
+                                            local itemamount = chest_inventory[k].count
                                             if (itemamount > 1) then
                                                 itemamount = itemamount - 1
                                             end
