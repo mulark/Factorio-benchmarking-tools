@@ -71,13 +71,17 @@ script.on_event(defines.events.on_tick, function(event)
                                     for k=1,#chest_inventory do
                                         if (chest_inventory[k].valid_for_read) then
                                             local itemname = chest_inventory[k].name
-                                            local itemamount = chest_inventory[k].count
-                                            if (itemamount > 1) then
-                                                if not (newent.type == "roboport") then
-                                                    itemamount = itemamount - 1
+                                            if has_value(itemname, {"blueprint", "power-armor", "power-armor-mk1", "power-armor-mk2"}) then
+                                                newent.insert(chest_inventory[k])
+                                            else
+                                                local itemamount = chest_inventory[k].count
+                                                if (itemamount > 1) then
+                                                    if not (newent.type == "roboport") then
+                                                        itemamount = itemamount - 1
+                                                    end
                                                 end
+                                                newent.insert({name=itemname, count=itemamount})
                                             end
-                                            newent.insert({name=itemname, count=itemamount})
                                         end
                                     end
                                 end
@@ -86,11 +90,15 @@ script.on_event(defines.events.on_tick, function(event)
                                         if (ent.get_inventory(defines.inventory.car_trunk)[k].valid_for_read) then
                                             local inventory = ent.get_inventory(defines.inventory.car_trunk)
                                             local itemname = inventory[k].name
-                                            local itemamount = inventory[k].count
-                                            if (itemamount > 1) then
-                                                itemamount = itemamount - 1
+                                            if has_value(itemname, {"blueprint", "power-armor", "power-armor-mk1", "power-armor-mk2"}) then
+                                                newent.insert(inventory[k])
+                                            else
+                                                local itemamount = inventory[k].count
+                                                if (itemamount > 1) then
+                                                    itemamount = itemamount - 1
+                                                end
+                                                newent.insert({name=itemname, count=itemamount})
                                             end
-                                            newent.insert({name=itemname, count=itemamount})
                                         end
                                     end
                                 end
@@ -140,11 +148,15 @@ script.on_event(defines.events.on_tick, function(event)
                                             if (ent.get_inventory(defines.inventory.chest)[k].valid_for_read) then
                                                 local inventory = ent.get_inventory(defines.inventory.chest)
                                                 local itemname = inventory[k].name
-                                                local itemamount = inventory[k].count
-                                                if (itemamount > 1) then
-                                                    itemamount = itemamount - 1
+                                                if has_value(itemname, {"blueprint", "power-armor", "power-armor-mk1", "power-armor-mk2"}) then
+                                                    newent.insert(inventory[k])
+                                                else
+                                                    local itemamount = inventory[k].count
+                                                    if (itemamount > 1) then
+                                                        itemamount = itemamount - 1
+                                                    end
+                                                newent.insert({name=itemname, count=itemamount})
                                                 end
-                                            newent.insert({name=itemname, count=itemamount})
                                             end
                                         end
                                     end
