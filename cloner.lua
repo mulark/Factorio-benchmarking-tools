@@ -34,7 +34,7 @@ script.on_event(defines.events.on_tick, function(event)
         for current_paste = 1, times_to_paste do
                 if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
                         for key, ent in pairs(entity_pool) do
-                            if not has_value(ent.type, {"beacon", "locomotive", "player", "cargo-wagon"}) then
+                            if not has_value(ent.type, {"beacon", "locomotive", "player", "cargo-wagon", "logistic-robot", "construction-robot"}) then
                                 if (ent.type == "underground-belt") then
                                     surface.create_entity{name = ent.name, position={ent.position.x+0, ent.position.y-(tile_paste_length*current_paste)}, direction=ent.direction, force="player", type=ent.belt_to_ground_type}
                                 else
@@ -54,9 +54,13 @@ script.on_event(defines.events.on_tick, function(event)
                                         end
                                     end
                                 end
-                                if (ent.type == "resource") then
-                                    newent.amount=ent.amount
-                                end
+                                if (newent.type == "mining-drill") then
+                                    local resource_patch = surface.find_entities_filtered({type = "resource", position={ent.position.x, ent.position.y}})
+                                    for key, resource_to_clear in pairs(surface.find_entities_filtered({type = "resource", position={newent.position.x, newent.position.y}})) do
+                                        resource_to_clear.destroy()
+                                    end
+                                    surface.create_entity({name = resource_patch[1].name, position = {newent.position.x, newent.position.y}, force = "neutral", amount = resource_patch[1].amount})
+                                end  
                                 if (newent.get_fuel_inventory()) then
                                     if (newent.get_fuel_inventory().is_empty()) then
                                         newent.get_fuel_inventory().insert("nuclear-fuel")
@@ -69,9 +73,11 @@ script.on_event(defines.events.on_tick, function(event)
                                             local itemname = chest_inventory[k].name
                                             local itemamount = chest_inventory[k].count
                                             if (itemamount > 1) then
-                                                itemamount = itemamount - 1
+                                                if not (newent.type == "roboport") then
+                                                    itemamount = itemamount - 1
+                                                end
                                             end
-                                        newent.insert({name=itemname, count=itemamount})
+                                            newent.insert({name=itemname, count=itemamount})
                                         end
                                     end
                                 end
@@ -108,7 +114,7 @@ script.on_event(defines.events.on_tick, function(event)
                
                 if (game.tick == (start_tick + ((current_paste + 1) * ticks_per_paste))) then
                         for key, ent in pairs(entity_pool) do
-                            if has_value(ent.type, {"beacon", "locomotive", "cargo-wagon"}) then
+                            if has_value(ent.type, {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot"}) then
                                 surface.create_entity{name=ent.name, position={ent.position.x+0, ent.position.y-(tile_paste_length*(current_paste))}, direction=ent.direction, force="player"}
                                 local newent = surface.find_entity(ent.name, {ent.position.x+0, ent.position.y-(tile_paste_length*(current_paste))})
                                 if (ent.train) then
