@@ -1,10 +1,10 @@
 /c     
 local surface=game.player.surface
 local tile_paste_length = 64
-local start_tile=0
+local start_tile = 0
 local times_to_paste=1
 local start_tick=game.tick
-local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1000, start_tile}}, force="player"})
+local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1500, start_tile}}, force="player"})
 local first_run = true
 local ticks_per_paste = 2
 
@@ -24,7 +24,7 @@ end
 script.on_event(defines.events.on_tick, function(event)
     if (first_run == true) then
         if(game.tick == start_tick) then
-            for key, ent in pairs(surface.find_entities_filtered({area={{-1000, (start_tile-(tile_paste_length*(times_to_paste+1)))}, {1000, (start_tile-tile_paste_length)}}, force="player"})) do
+            for key, ent in pairs(surface.find_entities_filtered({area={{-1000, (start_tile-(tile_paste_length*(times_to_paste+1)))}, {1500, (start_tile-tile_paste_length)}}, force="player"})) do
                 if (ent.type ~= "player") then
                     ent.destroy()
                 end
@@ -43,10 +43,10 @@ script.on_event(defines.events.on_tick, function(event)
                                 local newent = surface.find_entity(ent.name, {ent.position.x+0, ent.position.y-(tile_paste_length*current_paste)})
                                 if (newent.type == "loader") then
                                     newent.loader_type = ent.loader_type
-                                    newent.direction = ent.direction
                                 end
                                 newent.copy_settings(ent)
                                 newent.orientation = ent.orientation
+                                newent.direction = ent.direction
                                 if (ent.get_module_inventory()) then
                                     for x=1,#ent.get_module_inventory() do
                                         if (ent.get_module_inventory()[x].valid_for_read) then
@@ -55,11 +55,13 @@ script.on_event(defines.events.on_tick, function(event)
                                     end
                                 end
                                 if (newent.type == "mining-drill") then
-                                    local resource_patch = surface.find_entities_filtered({type = "resource", position={ent.position.x, ent.position.y}})
-                                    for key, resource_to_clear in pairs(surface.find_entities_filtered({type = "resource", position={newent.position.x, newent.position.y}})) do
-                                        resource_to_clear.destroy()
+                                    if (ent.mining_target) then
+                                        local resource = ent.mining_target
+                                        for key, resource_to_clear in pairs(surface.find_entities_filtered({type = "resource", position={newent.position.x, newent.position.y}})) do
+                                            resource_to_clear.destroy()
+                                        end
+                                        surface.create_entity({name = resource.name, position = {newent.position.x, newent.position.y}, force = "neutral", amount = resource.amount})
                                     end
-                                    surface.create_entity({name = resource_patch[1].name, position = {newent.position.x, newent.position.y}, force = "neutral", amount = resource_patch[1].amount})
                                 end  
                                 if (newent.get_fuel_inventory()) then
                                     if (newent.get_fuel_inventory().is_empty()) then
