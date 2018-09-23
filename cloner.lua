@@ -7,6 +7,7 @@ local start_tick=game.tick
 local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1500, start_tile}}, force="player"})
 local first_run = true
 local ticks_per_paste = 2
+local try_to_prime_inserters_pulling_from_belt = false
 
 local function has_value (val, tab)
     for index, value in ipairs(tab) do
@@ -29,7 +30,7 @@ script.on_event(defines.events.on_tick, function(event)
                     ent.destroy()
                 end
             end
-            game.forces.player.chart(surface, {{x = -500, y = (start_tile-(tile_paste_length*(times_to_paste+1)))}, {x = 500, y = (start_tile-tile_paste_length)}})
+            game.forces.player.chart(surface, {{x = -750, y = (start_tile-(tile_paste_length*(times_to_paste+1)))}, {x = 750, y = (start_tile-tile_paste_length)}})
         end
         for current_paste = 1, times_to_paste do
                 if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
@@ -79,7 +80,9 @@ script.on_event(defines.events.on_tick, function(event)
                                                 local itemamount = chest_inventory[k].count
                                                 if (itemamount > 1) then
                                                     if not (newent.type == "roboport") then
-                                                        itemamount = itemamount - 1
+                                                        if (try_to_prime_inserters_pulling_from_belt) then
+                                                            itemamount = itemamount - 1
+                                                        end
                                                     end
                                                 end
                                                 newent.insert({name=itemname, count=itemamount})
@@ -97,7 +100,9 @@ script.on_event(defines.events.on_tick, function(event)
                                             else
                                                 local itemamount = inventory[k].count
                                                 if (itemamount > 1) then
-                                                    itemamount = itemamount - 1
+                                                    if (try_to_prime_inserters_pulling_from_belt) then
+                                                        itemamount = itemamount - 1
+                                                    end
                                                 end
                                                 newent.insert({name=itemname, count=itemamount})
                                             end
@@ -130,7 +135,6 @@ script.on_event(defines.events.on_tick, function(event)
                                 if (ent.train) then
                                     newent.disconnect_rolling_stock(defines.rail_direction.front)
                                     newent.disconnect_rolling_stock(defines.rail_direction.back)
-                                    newent.train.manual_mode = ent.train.manual_mode
                                     newent.train.schedule = ent.train.schedule
                                     if (ent.orientation <= 0.5) then
                                         if (ent.orientation ~= 0) then
@@ -155,13 +159,16 @@ script.on_event(defines.events.on_tick, function(event)
                                                 else
                                                     local itemamount = inventory[k].count
                                                     if (itemamount > 1) then
-                                                        itemamount = itemamount - 1
+                                                        if (try_to_prime_inserters_pulling_from_belt) then
+                                                            itemamount = itemamount - 1
+                                                        end
                                                     end
                                                 newent.insert({name=itemname, count=itemamount})
                                                 end
                                             end
                                         end
                                     end
+                                    newent.train.manual_mode = ent.train.manual_mode
                                 end
                                 if (ent.get_module_inventory()) then
                                     for x=1,#ent.get_module_inventory() do
