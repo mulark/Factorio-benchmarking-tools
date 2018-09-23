@@ -170,7 +170,9 @@ script.on_event(defines.events.on_tick, function(event)
                                         end
                                     end
                                 end
-                                newent.update_connections()
+                                if (newent.valid) then
+                                    newent.update_connections()
+                                end
                                 
                             end
                         end
