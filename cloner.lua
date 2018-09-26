@@ -22,6 +22,10 @@ if ((tile_paste_length % 2) ~= 0) then
     tile_paste_length = tile_paste_length + 1
 end
 
+for key, ent in pairs(entity_pool) do
+    ent.active = false
+end
+
 script.on_event(defines.events.on_tick, function(event)
     if (first_run == true) then
         if(game.tick == start_tick) then
@@ -127,7 +131,7 @@ script.on_event(defines.events.on_tick, function(event)
                         end
                 end
                
-                if (game.tick == (start_tick + ((current_paste + 1) * ticks_per_paste))) then
+                if (game.tick == (start_tick + ((current_paste) * ticks_per_paste))) then
                         for key, ent in pairs(entity_pool) do
                             if has_value(ent.type, {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot"}) then
                                 surface.create_entity{name=ent.name, position={ent.position.x+0, ent.position.y-(tile_paste_length*(current_paste))}, direction=ent.direction, force="player"}
@@ -183,11 +187,14 @@ script.on_event(defines.events.on_tick, function(event)
                                 
                             end
                         end
-                end
+               end
         end
-                  if (game.tick == (start_tick + (times_to_paste*ticks_per_paste) + 60 )) then
-                    game.players[1].force.chart_all()
-                    first_run = false
+                  if (game.tick == (start_tick + ((times_to_paste + 1)*ticks_per_paste) + 60 )) then
+                        for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
+                            ent.active = true
+                        end
+                        game.players[1].force.chart_all()
+                        first_run = false
                end
     end
 end);
