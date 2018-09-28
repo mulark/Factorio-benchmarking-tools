@@ -2,12 +2,13 @@
 local surface=game.player.surface
 local tile_paste_length = 64
 local start_tile = 0
-local times_to_paste=1
-local start_tick=game.tick
+local times_to_paste = 1
+local start_tick = game.tick + 1
 local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1500, start_tile}}, force="player"})
 local first_run = true
 local ticks_per_paste = 2
 local try_to_prime_inserters_pulling_from_belt = false
+local second_try_destroy_entities = {}
 
 local function has_value (val, tab)
     for index, value in ipairs(tab) do
@@ -26,11 +27,22 @@ for key, ent in pairs(entity_pool) do
     ent.active = false
 end
 
+for key, ent in pairs(surface.find_entities_filtered({area={{-1000, (start_tile-(tile_paste_length*(times_to_paste+1)))}, {1500, (start_tile-tile_paste_length)}}, force="player"})) do
+    if (ent.type ~= "player") then
+        ent.clear_items_inside()
+        if not (ent.can_be_destroyed()) then
+            table.insert(second_try_destroy_entities, ent)
+        end
+        ent.destroy()
+    end
+end
+
 script.on_event(defines.events.on_tick, function(event)
     if (first_run == true) then
         if(game.tick == start_tick) then
-            for key, ent in pairs(surface.find_entities_filtered({area={{-1000, (start_tile-(tile_paste_length*(times_to_paste+1)))}, {1500, (start_tile-tile_paste_length)}}, force="player"})) do
+            for key, ent in pairs(second_try_destroy_entities) do
                 if (ent.type ~= "player") then
+                    ent.clear_items_inside()
                     ent.destroy()
                 end
             end
@@ -66,6 +78,10 @@ script.on_event(defines.events.on_tick, function(event)
                                             resource_to_clear.destroy()
                                         end
                                         surface.create_entity({name = resource.name, position = {newent.position.x, newent.position.y}, force = "neutral", amount = resource.amount})
+                                        if (resource.initial_amount) then
+                                            local newresource = surface.find_entity(resource.name,{newent.position.x, newent.position.y})
+                                            newresource.initial_amount = resource.initial_amount
+                                        end
                                     end
                                 end  
                                 if (newent.get_fuel_inventory()) then
@@ -131,7 +147,7 @@ script.on_event(defines.events.on_tick, function(event)
                         end
                 end
                
-                if (game.tick == (start_tick + ((current_paste) * ticks_per_paste))) then
+                if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
                         for key, ent in pairs(entity_pool) do
                             if has_value(ent.type, {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot"}) then
                                 surface.create_entity{name=ent.name, position={ent.position.x+0, ent.position.y-(tile_paste_length*(current_paste))}, direction=ent.direction, force="player"}
