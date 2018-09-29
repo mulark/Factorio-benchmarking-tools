@@ -3,7 +3,7 @@ local surface=game.player.surface
 local tile_paste_length = 64
 local start_tile = 0
 local times_to_paste = 1
-local start_tick = game.tick + 1
+local start_tick = (game.tick + 1)
 local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1500, start_tile}}, force="player"})
 local first_run = true
 local ticks_per_paste = 2
@@ -147,7 +147,7 @@ script.on_event(defines.events.on_tick, function(event)
                         end
                 end
                
-                if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
+                if (game.tick == (start_tick + (current_paste * ticks_per_paste) + 1)) then
                         for key, ent in pairs(entity_pool) do
                             if has_value(ent.type, {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot"}) then
                                 surface.create_entity{name=ent.name, position={ent.position.x+0, ent.position.y-(tile_paste_length*(current_paste))}, direction=ent.direction, force="player"}
