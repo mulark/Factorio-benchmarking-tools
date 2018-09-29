@@ -9,6 +9,7 @@ local first_run = true
 local ticks_per_paste = 2
 local try_to_prime_inserters_pulling_from_belt = false
 local second_try_destroy_entities = {}
+local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot"}
 
 local function has_value (val, tab)
     for index, value in ipairs(tab) do
@@ -24,6 +25,9 @@ if ((tile_paste_length % 2) ~= 0) then
 end
 
 for key, ent in pairs(entity_pool) do
+    if (ent.type == "player") then
+        entity_pool[key] = nil
+    end
     ent.active = false
 end
 
@@ -51,7 +55,7 @@ script.on_event(defines.events.on_tick, function(event)
         for current_paste = 1, times_to_paste do
                 if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
                         for key, ent in pairs(entity_pool) do
-                            if not has_value(ent.type, {"beacon", "locomotive", "player", "cargo-wagon", "logistic-robot", "construction-robot"}) then
+                            if not has_value(ent.type, low_priority_entities) then
                                 if (ent.type == "underground-belt") then
                                     surface.create_entity{name = ent.name, position={ent.position.x+0, ent.position.y-(tile_paste_length*current_paste)}, direction=ent.direction, force="player", type=ent.belt_to_ground_type}
                                 else
@@ -132,8 +136,8 @@ script.on_event(defines.events.on_tick, function(event)
                                 if (ent.circuit_connection_definitions) then
                                     for x=1, #ent.circuit_connection_definitions do
                                         local targetent = ent.circuit_connection_definitions[x].target_entity
-                                        offset_x = (ent.position.x - targetent.position.x)
-                                        offset_y = (ent.position.y - targetent.position.y)
+                                        local offset_x = (ent.position.x - targetent.position.x)
+                                        local offset_y = (ent.position.y - targetent.position.y)
                                         if (surface.find_entity(targetent.name, {(newent.position.x - offset_x), (newent.position.y - offset_y)})) then
                                             local targetnewent = surface.find_entity(targetent.name, {(newent.position.x - offset_x), (newent.position.y - offset_y)})
                                             newent.connect_neighbour({target_entity = targetnewent, wire=ent.circuit_connection_definitions[x].wire, source_circuit_id=ent.circuit_connection_definitions[x].source_circuit_id, target_circuit_id=ent.circuit_connection_definitions[x].target_circuit_id})
@@ -142,14 +146,13 @@ script.on_event(defines.events.on_tick, function(event)
                                 end
                                 
                                 
-                                
                             end
                         end
                 end
                
                 if (game.tick == (start_tick + (current_paste * ticks_per_paste) + 1)) then
                         for key, ent in pairs(entity_pool) do
-                            if has_value(ent.type, {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot"}) then
+                            if has_value(ent.type, low_priority_entities) then
                                 surface.create_entity{name=ent.name, position={ent.position.x+0, ent.position.y-(tile_paste_length*(current_paste))}, direction=ent.direction, force="player"}
                                 local newent = surface.find_entity(ent.name, {ent.position.x+0, ent.position.y-(tile_paste_length*(current_paste))})
                                 if (ent.train) then
