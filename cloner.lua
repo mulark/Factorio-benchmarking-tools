@@ -9,7 +9,7 @@ local first_run = true
 local ticks_per_paste = 2
 local try_to_prime_inserters_pulling_from_belt = false
 local second_try_destroy_entities = {}
-local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot"}
+local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot", "fluid-wagon"}
 
 local function has_value (val, tab)
     for index, value in ipairs(tab) do
