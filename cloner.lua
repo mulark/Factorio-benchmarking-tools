@@ -10,6 +10,7 @@ local ticks_per_paste = 2
 local try_to_prime_inserters_pulling_from_belt = false
 local second_try_destroy_entities = {}
 local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot", "fluid-wagon"}
+local use_exact_power_wires = false
 
 local function has_value (val, tab)
     for index, value in ipairs(tab) do
@@ -73,6 +74,11 @@ script.on_event(defines.events.on_tick, function(event)
                                         if (ent.get_module_inventory()[x].valid_for_read) then
                                             newent.insert(ent.get_module_inventory()[x])
                                         end
+                                    end
+                                end
+                                if (#ent.fluidbox >= 1) then
+                                    for x=1, #ent.fluidbox do
+                                        newent.fluidbox[x] = ent.fluidbox[x]
                                     end
                                 end
                                 if (newent.type == "mining-drill") then
@@ -144,6 +150,18 @@ script.on_event(defines.events.on_tick, function(event)
                                         end
                                     end
                                 end
+                                if (ent.type == "electric-pole" and use_exact_power_wires) then
+                                    newent.disconnect_neighbour()
+                                    for x=1, #ent.neighbours["copper"] do
+                                        local targetent = ent.neighbours["copper"][x]
+                                        local offset_x = (ent.position.x - targetent.position.x)
+                                        local offset_y = (ent.position.y - targetent.position.y)
+                                        if (surface.find_entity(targetent.name, {(newent.position.x - offset_x), (newent.position.y - offset_y)})) then
+                                            local targetnewent = surface.find_entity(targetent.name, {(newent.position.x - offset_x), (newent.position.y - offset_y)})
+                                            newent.connect_neighbour(targetnewent)
+                                        end
+                                    end
+                                end
                                 
                                 
                             end
@@ -192,6 +210,11 @@ script.on_event(defines.events.on_tick, function(event)
                                         end
                                     end
                                     newent.train.manual_mode = ent.train.manual_mode
+                                end
+                                if (#ent.fluidbox >= 1) then
+                                    for x=1, #ent.fluidbox do
+                                        newent.fluidbox[x] = ent.fluidbox[x]
+                                    end
                                 end
                                 if (ent.get_module_inventory()) then
                                     for x=1,#ent.get_module_inventory() do
