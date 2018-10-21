@@ -81,6 +81,13 @@ script.on_event(defines.events.on_tick, function(event)
                                         newent.fluidbox[x] = ent.fluidbox[x]
                                     end
                                 end
+                                if (ent.type == "rocket-silo") then
+                                    newent.rocket_parts = ent.rocket_parts
+                                    newent.crafting_progress = ent.crafting_progress
+                                end
+                                if (ent.type == "assembling-machine") then
+                                    newent.crafting_progress = ent.crafting_progress
+                                end
                                 if (newent.type == "mining-drill") then
                                     if (ent.mining_target) then
                                         local resource = ent.mining_target
