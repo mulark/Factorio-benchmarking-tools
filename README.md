@@ -1,18 +1,12 @@
-The purpose of this repo is to provide a centrialized place to store Factorio maps that have been and will be used for performance testing reasons. Additional designs are welcome. Submissions welcomed via pull request (pull the base map and scale your design to the targeted production) or issue (submit a blueprint string, and I will adapt it to the testing scenario).
+The intent of this repo is to provide a useful scratchpad for maps, scripts, and commands that assist in the overall benchmarking process. 
 
-Also in the repo is a lua script to rapidly copy entities from one area to another. Use the base.v2.0 map and build your designs to the north of the hazard concrete. Once 1 copy is built, set the tile_paste_length and times_to_paste parameters to the desired values. It will then copy most every entity including cars, fuel, modules, items in inventories, inserters, belts, train schedules, circuit networks, and everything I've found to be needed to test a design. However, I can't possibly test every design, so if you have one that breaks it, send it over.
+Items of note in the repo: 
+* cloner.lua: A script to automagically copy all the entities in one area to another.
+* maps: a folder containing some past map tests and benchmarks. Future maps and benchmarks will be uploaded to https://mulark.github.io
+* useful_commands.lua: a lot of basic commands that I have used to bend the game state to my will. If a particuar command in this file becomes big or useful enough it will be split into a new file exclusively for it.
 
 
-Category | shortname | targeted production | Performance Results | Map descriptions
------|-----|-----|-----|-----
-Red Science | redsci | 300k/m | [Data](https://github.com/mulark/factorio-map-archive/blob/master/maps/redsci/redsci%20results.md) | [Descriptions](https://github.com/mulark/factorio-map-archive/blob/master/maps/redsci/redsci%20description.md)
-Green Science | greensci | 180k/m | [Data](https://github.com/mulark/factorio-map-archive/blob/master/maps/greensci/greensci%20results.md) | [Descriptions](https://github.com/mulark/factorio-map-archive/blob/master/maps/greensci/greensci%20description.md)
-Blue Science | bluesci | TBD |
-Grey Science | greysci | TBD |
-Purple Science | purplesci | TBD |
-Yellow Science | yellowsci | TBD |
-White Science | whitesci | TBD |
-6-Science | allsci | 5k/m / TBD |
+Legacy stuff below:
 
 **Naming Schema:**
 * {category shortname}.{design number}.{minor revision}
@@ -33,3 +27,4 @@ More categories and maps by suggestion
 * You may use the vanilla infinity chest to void the final product. The 6-Science category must be researching worker robots speed, no voiding may be used in this category.
 * You may not used the infinity chest to create items for any of the science categories. They must be mined and processed.
 * In general, if it is possible in vanilla, it is allowed.
+ 
