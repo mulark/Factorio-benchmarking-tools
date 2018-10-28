@@ -181,8 +181,8 @@ function clean_entity_pool(entity_pool)
     end
 end
 
-events = {defines.events.on_tick}
-script.on_event(events, function(event)
+
+script.on_event(defines.events.on_tick, function(event)
     if (first_run == true) then
         for current_paste = 1, times_to_paste do
             if (game.tick == start_tick) then
@@ -223,7 +223,6 @@ script.on_event(events, function(event)
                 end
                 game.players[1].force.chart_all()
                 first_run = false
-                events = nil
             end
         end
    end
