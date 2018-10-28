@@ -54,9 +54,9 @@ end
 
 function copy_properties(original_entity, cloned_entity)
     if (original_entity.type == "loader") then
-        cloned_entity.loader_type = cloned_entity.loader_type
+        cloned_entity.loader_type = original_entity.loader_type
     end
-    original_entity.copy_settings(cloned_entity)
+    cloned_entity.copy_settings(original_entity)
     cloned_entity.orientation = original_entity.orientation
     cloned_entity.direction = original_entity.direction
     if has_value(original_entity.type, {"rocket-silo", "assembling-machine"}) then
@@ -64,6 +64,13 @@ function copy_properties(original_entity, cloned_entity)
     end
     if has_value(original_entity.type, {"rocket-silo"}) then
         cloned_entity.crafting_progress = original_entity.crafting_progress
+        cloned_entity.rocket_parts = original_entity.rocket_parts
+    end
+    if (original_entity.burner) then
+        if (original_entity.burner.currently_burning) then
+            cloned_entity.burner.currently_burning = original_entity.burner.currently_burning
+            cloned_entity.burner.remaining_burning_fuel = original_entity.burner.remaining_burning_fuel
+        end
     end
 end
 
@@ -79,6 +86,15 @@ function copy_inventories(original_entity, cloned_entity)
         end
     end
     INV_DEFINE = defines.inventory.rocket_silo_result
+    if (original_entity.get_inventory(INV_DEFINE)) then
+        local working_inventory = original_entity.get_inventory(INV_DEFINE)
+        for k=1,#working_inventory do
+            if (working_inventory[k].valid_for_read) then
+                cloned_entity.insert(working_inventory[k])
+            end
+        end
+    end
+    INV_DEFINE = defines.inventory.furnace_source
     if (original_entity.get_inventory(INV_DEFINE)) then
         local working_inventory = original_entity.get_inventory(INV_DEFINE)
         for k=1,#working_inventory do
@@ -181,6 +197,61 @@ function clean_entity_pool(entity_pool)
     end
 end
 
+function prime_inserters(surface)
+    for key, ent in pairs (surface.find_entities_filtered({force="player"})) do
+        if has_value(ent.name, {"stack-inserter", "stack-filter-inserter"}) then
+            if has_value(ent.pickup_target.type, {"underground-belt", "transport-belt"}) then
+                if has_value(ent.drop_target.type, {"container", "car"}) then
+                    local drop_target_inventory
+                    local cleanly_primed_1 = false
+                    local cleanly_primed_2 = false
+                    if (ent.drop_target.type == "container") then
+                        drop_target_inventory = ent.drop_target.get_inventory(defines.inventory.chest)
+                    end
+                    if (ent.drop_target.type == "car") then
+                        drop_target_inventory = ent.drop_target.get_inventory(defines.inventory.car_trunk)
+                    end
+                    for item_name, unused in pairs (ent.pickup_target.get_transport_line(1).get_contents()) do
+                        local amount_inside = drop_target_inventory.get_item_count(item_name)
+                        local stack_size = game.item_prototypes[item_name].stack_size
+                        local held_amount = 0
+                        if (ent.held_stack.valid_for_read) then
+                            if (ent.held_stack.name == item_name) then
+                                held_amount = held_amount + ent.held_stack.count
+                            end
+                        end
+                        if (((amount_inside + held_amount) % stack_size) ~= 0) then
+                            ent.clear_items_inside()
+                            drop_target_inventory.insert({name = item_name, amount = stack_size})
+                            cleanly_primed_1 = true
+                        end
+                    end
+                    for item_name, unused in pairs (ent.pickup_target.get_transport_line(2).get_contents()) do
+                        local amount_inside = drop_target_inventory.get_item_count(item_name)
+                        local stack_size = game.item_prototypes[item_name].stack_size
+                        local held_amount = 0
+                        if (ent.held_stack.valid_for_read) then
+                            if (ent.held_stack.name == item_name) then
+                                held_amount = held_amount + ent.held_stack.count
+                            end
+                        end
+                        if (((amount_inside + held_amount) % stack_size) == 0) then
+                            drop_target_inventory.remove({name = item_name, amount = 1})
+                            cleanly_primed_2 = true
+                        end
+                    end
+                    if not (cleanly_primed_1 and cleanly_primed_2) then
+                        for item_name, item_amount in pairs (drop_target_inventory.get_contents()) do
+                            drop_target_inventory.remove({name = item_name, amount = 1})
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+
 
 script.on_event(defines.events.on_tick, function(event)
     if (first_run == true) then
@@ -217,12 +288,15 @@ script.on_event(defines.events.on_tick, function(event)
                         end
                     end
             end
-            if (game.tick == (start_tick + ((times_to_paste + 1)*ticks_per_paste) + 60 )) then
+            if (game.tick == (start_tick + ((times_to_paste + 1)*ticks_per_paste) + 600 )) then
                 for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
                     ent.active = true
                 end
                 game.players[1].force.chart_all()
                 first_run = false
+                if (try_to_prime_inserters_pulling_from_belt == true) then
+                    prime_inserters(surface)
+                end
             end
         end
    end
