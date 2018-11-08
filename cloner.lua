@@ -184,7 +184,7 @@ function copy_train(original_entity, cloned_entity)
         cloned_entity.connect_rolling_stock(defines.rail_direction.front)
         cloned_entity.connect_rolling_stock(defines.rail_direction.back)
         cloned_entity.copy_settings(original_entity)
-        cloned_entity.train.manual_mode = cloned_entity.train.manual_mode
+        cloned_entity.train.manual_mode = original_entity.train.manual_mode
     end
 end
 
