@@ -262,7 +262,7 @@ end
 
 /c game.player.surface.create_entity{name="car", position={game.player.selected.position.x+0, game.player.selected.position.y+32}, direction=defines.direction.east, force=game.player.selected.force}
 
-/c 
+/c
 local surface=game.player.surface
 for key, ent in pairs (surface.find_entities_filtered{force="player"}) do
     if (ent.position.x > 256) then
@@ -512,12 +512,15 @@ end
 /c local entity="offshore-pump"
 local surface=game.player.surface
 for key, ent in pairs(surface.find_entities_filtered({name = entity, force=game.player.force})) do
-    surface.create_entity({name="offshore-pump", position={ent.position.x, ent.position.y - 1}, force = "player", direction = ent.direction})
+    surface.create_entity({name="offshore-pump", position=game.player.selected.position, force = "player", direction = game.player.selected.direction})
     ent.destroy()
 end
 
 /c
 game.player.selected.connect_neighbour({target_entity = game.player.surface.find_entity("substation", {50, 50}), wire=defines.wire_type.copper})
+
+/c local surface = game.player.surface
+surface.create_entity({name="offshore-pump", position=game.player.selected.position, force = "player", direction = game.player.selected.direction})
 
 /c
 local surface = game.player.surface

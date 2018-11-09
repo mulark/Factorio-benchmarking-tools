@@ -5,7 +5,6 @@ local start_tile = 0
 local times_to_paste = 1
 local start_tick = (game.tick + 1)
 local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1500, start_tile}}, force="player"})
-local first_run = true
 local ticks_per_paste = 2
 local try_to_prime_inserters_pulling_from_belt = false
 local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot", "fluid-wagon"}
@@ -252,55 +251,51 @@ function prime_inserters(surface)
     end
 end
 
-
-
 script.on_event(defines.events.on_tick, function(event)
-    if (first_run == true) then
-        for current_paste = 1, times_to_paste do
-            if (game.tick == start_tick) then
-                game.players[1].clear_console()
-                clean_entity_pool(entity_pool)
-                clean_paste_area(surface, -1000, (start_tile-(tile_paste_length*(times_to_paste+1))), 1000, (start_tile-tile_paste_length))
-            end
-            if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
-                for key, ent in pairs(entity_pool) do
-                    local x_offset = ent.position.x + 0
-                    local y_offset = ent.position.y -(tile_paste_length*current_paste)
-                    local create_entity_values = {name = ent.name, position={x_offset, y_offset}, direction=ent.direction, force="player"}
-                    if not has_value(ent.type, low_priority_entities) then
-                        if (ent.type == "underground-belt") then
-                            create_entity_values.type = ent.belt_to_ground_type
-                        end
-                        surface.create_entity(create_entity_values)
-                        local newent = surface.find_entity(ent.name, {x_offset, y_offset})
-                        copy_entity(ent, newent)
-                        newent = nil
+    for current_paste = 1, times_to_paste do
+        if (game.tick == start_tick) then
+            game.players[1].clear_console()
+            clean_entity_pool(entity_pool)
+            clean_paste_area(surface, -1000, (start_tile-(tile_paste_length*(times_to_paste+1))), 1000, (start_tile-tile_paste_length))
+        end
+        if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
+            for key, ent in pairs(entity_pool) do
+                local x_offset = ent.position.x + 0
+                local y_offset = ent.position.y -(tile_paste_length*current_paste)
+                local create_entity_values = {name = ent.name, position={x_offset, y_offset}, direction=ent.direction, force="player"}
+                if not has_value(ent.type, low_priority_entities) then
+                    if (ent.type == "underground-belt") then
+                        create_entity_values.type = ent.belt_to_ground_type
                     end
-                end
-            end
-            if (game.tick == (start_tick + (current_paste * ticks_per_paste) + 1)) then
-                    for key, ent in pairs(entity_pool) do
-                        local x_offset = ent.position.x + 0
-                        local y_offset = ent.position.y -(tile_paste_length*current_paste)
-                        local create_entity_values = {name = ent.name, position={x_offset, y_offset}, direction=ent.direction, force="player"}
-                        if has_value(ent.type, low_priority_entities) then
-                            surface.create_entity(create_entity_values)
-                            local newent = surface.find_entity(ent.name, {x_offset, y_offset})
-                            copy_entity(ent, newent)
-                            newent = nil
-                        end
-                    end
-            end
-            if (game.tick == (start_tick + ((times_to_paste + 1)*ticks_per_paste) + 600 )) then
-                for key, ent in pairs(entity_pool) do
-                    ent.active = true
-                end
-                game.players[1].force.chart_all()
-                first_run = false
-                if (try_to_prime_inserters_pulling_from_belt == true) then
-                    prime_inserters(surface)
+                    surface.create_entity(create_entity_values)
+                    local newent = surface.find_entity(ent.name, {x_offset, y_offset})
+                    copy_entity(ent, newent)
+                    newent = nil
                 end
             end
         end
-   end
+        if (game.tick == (start_tick + (current_paste * ticks_per_paste) + 1)) then
+            for key, ent in pairs(entity_pool) do
+                local x_offset = ent.position.x + 0
+                local y_offset = ent.position.y -(tile_paste_length*current_paste)
+                local create_entity_values = {name = ent.name, position={x_offset, y_offset}, direction=ent.direction, force="player"}
+                if has_value(ent.type, low_priority_entities) then
+                    surface.create_entity(create_entity_values)
+                    local newent = surface.find_entity(ent.name, {x_offset, y_offset})
+                    copy_entity(ent, newent)
+                    newent = nil
+                end
+            end
+        end
+        if (game.tick == (start_tick + ((times_to_paste + 1)*ticks_per_paste) + 600 )) then
+            for key, ent in pairs(entity_pool) do
+                ent.active = true
+            end
+            game.players[1].force.chart_all()
+            if (try_to_prime_inserters_pulling_from_belt == true) then
+                prime_inserters(surface)
+            end
+            script.on_event(defines.events.on_tick, nil)
+        end
+    end
 end);
