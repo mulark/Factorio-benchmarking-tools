@@ -274,6 +274,7 @@ script.on_event(defines.events.on_tick, function(event)
                         surface.create_entity(create_entity_values)
                         local newent = surface.find_entity(ent.name, {x_offset, y_offset})
                         copy_entity(ent, newent)
+                        newent = nil
                     end
                 end
             end
@@ -286,6 +287,7 @@ script.on_event(defines.events.on_tick, function(event)
                             surface.create_entity(create_entity_values)
                             local newent = surface.find_entity(ent.name, {x_offset, y_offset})
                             copy_entity(ent, newent)
+                            newent = nil
                         end
                     end
             end
