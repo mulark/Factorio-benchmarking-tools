@@ -1,4 +1,4 @@
-/c
+/silent-command
 local surface=game.player.surface
 local tile_paste_length = 64
 local start_tile = 0
@@ -254,7 +254,6 @@ end
 script.on_event(defines.events.on_tick, function(event)
     for current_paste = 1, times_to_paste do
         if (game.tick == start_tick) then
-            game.players[1].clear_console()
             clean_entity_pool(entity_pool)
             clean_paste_area(surface, -1000, (start_tile-(tile_paste_length*(times_to_paste+1))), 1000, (start_tile-tile_paste_length))
         end
