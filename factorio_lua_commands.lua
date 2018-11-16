@@ -320,7 +320,42 @@ end
 
 
 
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="steel-chest"})) do
+    surface.create_entity({name="wooden-chest", fast_replace=true, position=ent.position, force = "player", spill=false})
+end
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="wooden-chest"})) do
+    ent.get_inventory(defines.inventory.chest).setbar()
+end
+/c
+local surface = game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="steel-chest"})) do
+    ent.get_inventory(defines.inventory.chest).setbar()
+end
+/c
+local surface = game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="steel-chest"})) do
+    ent.get_inventory(defines.inventory.chest).setbar(17)
+end
 
+/c
+for x=0,0 do
+    game.player.print("foo")
+end
+
+/c
+for x=0, 3 do
+    game.player.selected.get_transport_line(1).insert_at(x/4,{name="iron-ore"})
+end
+
+/c
+local original_entity = game.player.selected
+for item_name, item_amount in pairs(original_entity.get_transport_line(1).get_contents()) do
+    game.player.print(item_name .. "," .. item_amount)
+end
 
 
 /c local visiblity = "infinity"
@@ -374,7 +409,6 @@ for key, ent in pairs(surface.find_entities_filtered({name = entity, force=game.
 end
 
 
-defines.inventory.lab_input
 
 
 
@@ -638,7 +672,7 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
         revived = ent.revive()
     end
 end
-for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
+for key, ent in pairs(surface.find_entities_filtered() do
     if (ent.to_be_deconstructed(game.player.force)) then
         ent.destroy()
     end

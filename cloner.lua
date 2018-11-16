@@ -49,9 +49,10 @@ function copy_entity (original_entity, cloned_entity)
     end
     copy_train(original_entity, cloned_entity)
     cloned_entity.update_connections()
+    copy_transport_line_contents(original_entity, cloned_entity)
 end
 
-function copy_properties(original_entity, cloned_entity)
+function copy_properties (original_entity, cloned_entity)
     if (original_entity.type == "loader") then
         cloned_entity.loader_type = original_entity.loader_type
     end
@@ -73,7 +74,7 @@ function copy_properties(original_entity, cloned_entity)
     end
 end
 
-function copy_inventories(original_entity, cloned_entity)
+function copy_inventories (original_entity, cloned_entity)
     local INV_DEFINE
     INV_DEFINE = defines.inventory.chest
     if (original_entity.get_inventory(INV_DEFINE)) then
@@ -125,7 +126,7 @@ function copy_inventories(original_entity, cloned_entity)
     end
 end
 
-function copy_resources(original_entity, cloned_entity)
+function copy_resources (original_entity, cloned_entity)
     if (original_entity.type == "mining-drill") then
         if (original_entity.mining_target) then
             local resource = original_entity.mining_target
@@ -170,7 +171,7 @@ function copy_exact_power (original_entity, cloned_entity)
     end
 end
 
-function copy_train(original_entity, cloned_entity)
+function copy_train (original_entity, cloned_entity)
     if (original_entity.train) then
         cloned_entity.disconnect_rolling_stock(defines.rail_direction.front)
         cloned_entity.disconnect_rolling_stock(defines.rail_direction.back)
@@ -187,7 +188,26 @@ function copy_train(original_entity, cloned_entity)
     end
 end
 
-function clean_entity_pool(entity_pool)
+function copy_transport_line_contents (original_entity, cloned_entity)
+    local transport_lines_present = 0
+    if (original_entity.type == "splitter") then
+        transport_lines_present = 8
+    end
+    if has_value (original_entity.type, {"transport-belt","underground-belt"}) then
+        transport_lines_present = 2
+    end
+    for x = 1, transport_lines_present do
+        for item_name, item_amount in pairs(original_entity.get_transport_line(x).get_contents()) do
+            for position = 0, item_amount - 1 do
+                cloned_entity.get_transport_line(x).insert_at(position/item_amount,{name = item_name})
+            end
+        end
+    end
+end
+
+
+
+function clean_entity_pool (entity_pool)
     for key, ent in pairs(entity_pool) do
         if has_value(ent.type,{"player", "entity-ghost", "tile-ghost"}) then
             entity_pool[key] = nil
@@ -197,7 +217,7 @@ function clean_entity_pool(entity_pool)
     end
 end
 
-function prime_inserters(surface)
+function prime_inserters (surface)
     for key, ent in pairs (surface.find_entities_filtered({force="player"})) do
         if has_value(ent.name, {"stack-inserter", "stack-filter-inserter"}) then
             if has_value(ent.pickup_target.type, {"underground-belt", "transport-belt"}) then
