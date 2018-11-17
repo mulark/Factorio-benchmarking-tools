@@ -347,8 +347,8 @@ for x=0,0 do
 end
 
 /c
-for x=0, 3 do
-    game.player.selected.get_transport_line(1).insert_at(x/4,{name="iron-ore"})
+for x=0, 0.75, 0.25 do
+    game.player.selected.get_transport_line(1).insert_at(x,{name="iron-ore"})
 end
 
 /c

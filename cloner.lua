@@ -197,9 +197,11 @@ function copy_transport_line_contents (original_entity, cloned_entity)
         transport_lines_present = 2
     end
     for x = 1, transport_lines_present do
+        local current_position = 0
         for item_name, item_amount in pairs(original_entity.get_transport_line(x).get_contents()) do
-            for position = 0, item_amount - 1 do
-                cloned_entity.get_transport_line(x).insert_at(position/item_amount,{name = item_name})
+            for _=1, item_amount do
+                cloned_entity.get_transport_line(x).insert_at(current_position,{name = item_name})
+                current_position = current_position + 0.25
             end
         end
     end
