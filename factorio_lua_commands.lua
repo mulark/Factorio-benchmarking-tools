@@ -24,7 +24,22 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
     end
 end
 
+
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({name="car"})) do
+    ent.clear_items_inside()
+end
+
 /c game.player.surface.delete_chunk({math.floor(game.player.selected.position.x / 32), math.floor(game.player.selected.position.y / 32)})
+
+
+/c local surface = game.player.surface
+for x=-7, 7 do
+    for y=-7, 7 do
+        surface.delete_chunk({x, y})
+    end
+end
 
 
 /c
@@ -665,6 +680,25 @@ game.player.print(count)
 
 
 
+/c local ent_force = "player"
+local count = 0
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force = ent_force})) do
+    if (ent.position.x > 99500) then
+        ent.destroy()
+    end
+end
+
+/c local ent_force = "player"
+local ent_name = "car"
+local count = 0
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({name = ent_name, force = ent_force})) do
+    if (ent.name == ent_name) then
+        ent.destroy()
+    end
+end
+
 
 /c local surface = game.player.surface
 for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
@@ -672,7 +706,7 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
         revived = ent.revive()
     end
 end
-for key, ent in pairs(surface.find_entities_filtered() do
+for key, ent in pairs(surface.find_entities_filtered({surface=game.player.surface})) do
     if (ent.to_be_deconstructed(game.player.force)) then
         ent.destroy()
     end
@@ -688,9 +722,22 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
 end
 
 
+/c local surface = game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
+    if (ent.type == "item-request-proxy") then
+        for key, req in  pairs (ent.item_requests) do
+            game.player.print(key .. req)
+            ent.proxy_target.insert({name = key, count = req})
+            ent.item_requests = nil
+        end
+    end
+end
+
+
 /c
 for x=1, 2 do game.player.print(game.player.selected.get_inventory(x).get_contents())
 end
+
 
 
 

@@ -1,14 +1,18 @@
 /silent-command
 local surface=game.player.surface
+local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot", "fluid-wagon"}
+local start_tick = (game.tick + 1)
+
 local tile_paste_length = 64
 local start_tile = 0
 local times_to_paste = 1
-local start_tick = (game.tick + 1)
-local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1500, start_tile}}, force="player"})
+local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1000, start_tile}}, force="player"})
 local ticks_per_paste = 2
 local try_to_prime_inserters_pulling_from_belt = false
-local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot", "fluid-wagon"}
 local use_exact_power_wires = false
+local use_smart_map_charting_wip = false
+local copy_belt_contents = true
+
 
 if ((tile_paste_length % 2) ~= 0) then
     tile_paste_length = tile_paste_length + 1
@@ -49,7 +53,9 @@ function copy_entity (original_entity, cloned_entity)
     end
     copy_train(original_entity, cloned_entity)
     cloned_entity.update_connections()
-    copy_transport_line_contents(original_entity, cloned_entity)
+    if (copy_belt_contents) then
+        copy_transport_line_contents(original_entity, cloned_entity)
+    end
 end
 
 function copy_properties (original_entity, cloned_entity)
@@ -207,8 +213,6 @@ function copy_transport_line_contents (original_entity, cloned_entity)
     end
 end
 
-
-
 function clean_entity_pool (entity_pool)
     for key, ent in pairs(entity_pool) do
         if has_value(ent.type,{"player", "entity-ghost", "tile-ghost"}) then
@@ -277,12 +281,12 @@ script.on_event(defines.events.on_tick, function(event)
     for current_paste = 1, times_to_paste do
         if (game.tick == start_tick) then
             clean_entity_pool(entity_pool)
-            clean_paste_area(surface, -1000, (start_tile-(tile_paste_length*(times_to_paste+1))), 1000, (start_tile-tile_paste_length))
         end
         if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
+            clean_paste_area(surface, -1000, -1 * ((current_paste + 1) * tile_paste_length + 4), 1000, -1 * (current_paste * tile_paste_length))
             for key, ent in pairs(entity_pool) do
                 local x_offset = ent.position.x + 0
-                local y_offset = ent.position.y -(tile_paste_length*current_paste)
+                local y_offset = ent.position.y - (tile_paste_length*current_paste)
                 local create_entity_values = {name = ent.name, position={x_offset, y_offset}, direction=ent.direction, force="player"}
                 if not has_value(ent.type, low_priority_entities) then
                     if (ent.type == "underground-belt") then
@@ -312,7 +316,9 @@ script.on_event(defines.events.on_tick, function(event)
             for key, ent in pairs(entity_pool) do
                 ent.active = true
             end
-            game.players[1].force.chart_all()
+            if not (use_smart_map_charting) then
+                game.forces["player"].chart_all()
+            end
             if (try_to_prime_inserters_pulling_from_belt == true) then
                 prime_inserters(surface)
             end
