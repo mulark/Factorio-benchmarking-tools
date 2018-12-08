@@ -233,7 +233,9 @@ function clean_entity_pool (entity_pool)
         if has_value(ent.type,{"player", "entity-ghost", "tile-ghost"}) then
             entity_pool[key] = nil
         else
-            ent.active = false
+            if not has_value(ent.type, {"decider-combinator", "arithmetic-combinator"}) then
+                ent.active = false
+            end
         end
     end
 end
@@ -329,7 +331,9 @@ script.on_event(defines.events.on_tick, function(event)
         end
         if (game.tick == (start_tick + ((times_to_paste + 1)*ticks_per_paste) + 600 )) then
             for key, ent in pairs(entity_pool) do
-                ent.active = true
+                if (ent.valid) then
+                    ent.active = true
+                end
             end
             if not (use_smart_map_charting) then
                 game.forces["player"].chart_all()
