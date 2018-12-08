@@ -2,6 +2,7 @@
 local surface = game.player.surface
 local inserter_pool = surface.find_entities_filtered({force = "player", type = "inserter"})
 local count = 0
+local debug_prints = true
 
 local function has_value (val, tab)
     for index, value in ipairs(tab) do
@@ -82,14 +83,24 @@ local function check_primed_inserter (ent)
     return false
 end
 
+
+local primed_inserters = 0
+local already_primed_inserters = 0
 local inserters_to_prime = {}
 inserters_to_prime = first_pass_throw_away_unneeded_inserters(inserter_pool)
 for key,ent in pairs (inserters_to_prime) do
     if not (check_primed_inserter(ent)) then
+        primed_inserters = primed_inserters + 1
         if (ent.held_stack.valid_for_read) then
             ent.drop_target.remove_item({name = ent.held_stack.name, amount = 1})
         else
             ent.drop_target.remove_item({name = ent.drop_target.get_inventory(defines.inventory.chest)[1].name, amount = 1})
         end
+    else
+        already_primed_inserters = already_primed_inserters + 1
     end
+end
+if (debug_prints) then
+    game.player.print(primed_inserters .. " inserters were primed")
+    game.player.print(already_primed_inserters .. " inserters were already primed, nothing was done")
 end
