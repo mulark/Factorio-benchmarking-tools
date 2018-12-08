@@ -2,13 +2,14 @@
 local surface=game.player.surface
 local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot", "fluid-wagon"}
 local start_tick = (game.tick + 1)
+local inserters_that_were_cloned = {}
 
 local tile_paste_length = 64
 local start_tile = 0
 local times_to_paste = 1
 local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1000, start_tile}}, force="player"})
 local ticks_per_paste = 2
-local try_to_prime_inserters_pulling_from_belt = false
+local try_to_prime_inserters_pulling_from_belt = true
 local use_exact_power_wires = false
 local use_smart_map_charting_wip = false
 local copy_belt_contents = true
@@ -232,58 +233,74 @@ function clean_entity_pool (entity_pool)
     end
 end
 
-function prime_inserters (surface)
-    for key, ent in pairs (surface.find_entities_filtered({force="player"})) do
-        if has_value(ent.name, {"stack-inserter", "stack-filter-inserter"}) then
+local function first_pass_throw_away_unneeded_inserters (pool)
+    local freshpool = {}
+    for key, ent in pairs (pool) do
+        if (ent.pickup_target) then
             if has_value(ent.pickup_target.type, {"underground-belt", "transport-belt"}) then
-                if has_value(ent.drop_target.type, {"container", "car"}) then
-                    local drop_target_inventory
-                    local cleanly_primed_1 = false
-                    local cleanly_primed_2 = false
+                if (ent.drop_target) then
                     if (ent.drop_target.type == "container") then
-                        drop_target_inventory = ent.drop_target.get_inventory(defines.inventory.chest)
-                    end
-                    if (ent.drop_target.type == "car") then
-                        drop_target_inventory = ent.drop_target.get_inventory(defines.inventory.car_trunk)
-                    end
-                    for item_name, unused in pairs (ent.pickup_target.get_transport_line(1).get_contents()) do
-                        local amount_inside = drop_target_inventory.get_item_count(item_name)
-                        local stack_size = game.item_prototypes[item_name].stack_size
-                        local held_amount = 0
-                        if (ent.held_stack.valid_for_read) then
-                            if (ent.held_stack.name == item_name) then
-                                held_amount = held_amount + ent.held_stack.count
-                            end
-                        end
-                        if (((amount_inside + held_amount) % stack_size) ~= 0) then
-                            ent.clear_items_inside()
-                            drop_target_inventory.insert({name = item_name, amount = stack_size})
-                            cleanly_primed_1 = true
-                        end
-                    end
-                    for item_name, unused in pairs (ent.pickup_target.get_transport_line(2).get_contents()) do
-                        local amount_inside = drop_target_inventory.get_item_count(item_name)
-                        local stack_size = game.item_prototypes[item_name].stack_size
-                        local held_amount = 0
-                        if (ent.held_stack.valid_for_read) then
-                            if (ent.held_stack.name == item_name) then
-                                held_amount = held_amount + ent.held_stack.count
-                            end
-                        end
-                        if (((amount_inside + held_amount) % stack_size) == 0) then
-                            drop_target_inventory.remove({name = item_name, amount = 1})
-                            cleanly_primed_2 = true
-                        end
-                    end
-                    if not (cleanly_primed_1 and cleanly_primed_2) then
-                        for item_name, item_amount in pairs (drop_target_inventory.get_contents()) do
-                            drop_target_inventory.remove({name = item_name, amount = 1})
-                        end
+                        table.insert(freshpool, ent)
                     end
                 end
             end
         end
     end
+    return freshpool
+end
+
+local function check_primed_inserter (ent)
+    if (ent.inserter_stack_size_override == 1) then
+        return true
+    end
+    if (ent.held_stack.valid_for_read) then
+        if (ent.held_stack.prototype.stack_size == 1) then
+            return true
+        end
+        if (ent.held_stack_position.x == ent.drop_position.x) then
+            if (ent.held_stack_position.y == ent.drop_position.y) then
+                return true
+            end
+        end
+        local held_item = ent.held_stack.name
+        local drop_inv = ent.drop_target.get_inventory(defines.inventory.chest)
+        local inserter_stack_size = ent.inserter_stack_size_override
+        if (ent.inserter_stack_size_override == 0) then
+            inserter_stack_size = 12
+        end
+        local items_inside = drop_inv.get_item_count(held_item) + inserter_stack_size
+        local item_capacity = (drop_inv.getbar() - 1) * game.item_prototypes[held_item].stack_size
+        if ((item_capacity / items_inside) == 0) then
+            return false
+        end
+        if ((item_capacity % items_inside) > 0) then
+            return true
+        end
+    end
+    if not (ent.held_stack.valid_for_read) then
+        local item_to_hold = ""
+        for name, _ in pairs (ent.pickup_target.get_transport_line(2).get_contents()) do
+            item_to_hold = name
+        end
+        if (item_to_hold == "") then
+            for name, _ in pairs (ent.pickup_target.get_transport_line(1).get_contents()) do
+                item_to_hold = name
+            end
+        end
+        if (item_to_hold == "") then
+            item_to_hold = ent.drop_target.get_inventory(defines.inventory.chest)[1].name
+        end
+        local items_inside = ent.drop_target.get_item_count(item_to_hold)
+        local slots = ent.drop_target.get_inventory(defines.inventory.chest).getbar() - 1
+        local item_capacity = slots * game.item_prototypes[item_to_hold].stack_size
+        if ((items_inside % item_capacity) ~= 0) then
+            items_inside = items_inside + 12
+            if ((items_inside % item_capacity) ~= 0) then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 script.on_event(defines.events.on_tick, function(event)
@@ -304,6 +321,9 @@ script.on_event(defines.events.on_tick, function(event)
                     surface.create_entity(create_entity_values)
                     local newent = surface.find_entity(ent.name, {x_offset, y_offset})
                     copy_entity(ent, newent)
+                    if (newent.type == "inserter") then
+                        table.insert(inserters_that_were_cloned, newent)
+                    end
                     newent = nil
                 end
             end
@@ -331,7 +351,16 @@ script.on_event(defines.events.on_tick, function(event)
                 game.forces["player"].chart_all()
             end
             if (try_to_prime_inserters_pulling_from_belt == true) then
-                prime_inserters(surface)
+                local inserters_to_prime = first_pass_throw_away_unneeded_inserters(inserters_that_were_cloned)
+                for _, ent in pairs(inserters_to_prime) do
+                    if not (check_primed_inserter(ent)) then
+                        if (ent.held_stack.valid_for_read) then
+                            ent.drop_target.remove_item({name = ent.held_stack.name, amount = 1})
+                        else
+                            ent.drop_target.remove_item({name = ent.drop_target.get_inventory(defines.inventory.chest)[1].name, amount = 1})
+                        end
+                    end
+                end
             end
             script.on_event(defines.events.on_tick, nil)
         end
