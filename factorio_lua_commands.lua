@@ -363,7 +363,7 @@ end
 
 /c
 for x=0, 0.75, 0.25 do
-    game.player.selected.get_transport_line(1).insert_at(x,{name="iron-ore"})
+    game.player.selected.get_transport_line(3).insert_at(x,{name="iron-ore"})
 end
 
 /c
@@ -684,9 +684,51 @@ game.player.print(count)
 local count = 0
 local surface=game.player.surface
 for key, ent in pairs(surface.find_entities_filtered({force = ent_force})) do
-    if (ent.position.x > 99500) then
+    if (ent.position.y < -100) then
         ent.destroy()
     end
+end
+
+
+/c
+ent = game.player.selected
+for name, amount in pairs (ent.get_transport_line(2).get_contents()) do
+    game.player.print(name .. " " .. amount)
+    if (amount == 0) then
+        game.player.print("name was nil?")
+    end
+end
+
+/c
+ent = game.player.selected
+function true_or_false (ent)
+    if not (ent.held_stack.valid_for_read) then
+        local item_to_hold = ""
+        for name, _ in pairs (ent.pickup_target.get_transport_line(2).get_contents()) do
+            game.player.print(name)
+            item_to_hold = name
+        end
+
+        local items_inside = ent.drop_target.get_item_count(item_to_hold)
+        local slots = ent.drop_target.get_inventory(defines.inventory.chest).getbar() - 1
+        local item_capacity = slots * game.item_prototypes[item_to_hold].stack_size
+        if ((items_inside % item_capacity) ~= 0) then
+            items_inside = items_inside + 12
+            if ((items_inside % item_capacity) ~= 0) then
+                return true
+            end
+        end
+    end
+    return false
+end
+game.player.print(true_or_false(ent))
+
+
+
+
+/c
+for name, amount in pairs(game.player.selected.get_inventory(defines.inventory.fuel).get_contents()) do
+    game.player.print(name)
 end
 
 /c local ent_force = "player"

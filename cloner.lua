@@ -199,15 +199,30 @@ function copy_transport_line_contents (original_entity, cloned_entity)
     if (original_entity.type == "splitter") then
         transport_lines_present = 8
     end
-    if has_value (original_entity.type, {"transport-belt","underground-belt"}) then
+    if (original_entity.type == "underground-belt") then
+        transport_lines_present = 4
+        if (original_entity.belt_to_ground_type == "input") then
+            if (original_entity.direction == 2 or original_entity.direction == 4) then
+                if (original_entity.neighbours) then
+                    local offset_x = original_entity.neighbours.position.x - original_entity.position.x
+                    local offset_y = original_entity.neighbours.position.y - original_entity.position.y
+                    if not (cloned_entity.neighbours) then
+                        cloned_entity.surface.create_entity({name = cloned_entity.name, position = {cloned_entity.position.x + offset_x, cloned_entity.position.y + offset_y}, force = cloned_entity.force, direction = cloned_entity.direction, type = "output"})
+                    end
+                end
+            end
+        end
+    end
+    if (original_entity.type == "transport-belt") then
         transport_lines_present = 2
     end
     for x = 1, transport_lines_present do
         local current_position = 0
         for item_name, item_amount in pairs(original_entity.get_transport_line(x).get_contents()) do
             for _=1, item_amount do
+                game.players[1].print(item_name .. " " .. item_amount)
                 cloned_entity.get_transport_line(x).insert_at(current_position,{name = item_name})
-                current_position = current_position + 0.25
+                current_position = current_position + 0.28125
             end
         end
     end
