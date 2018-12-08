@@ -45,7 +45,8 @@ end
 
 function copy_entity (original_entity, cloned_entity)
     copy_properties(original_entity, cloned_entity)
-    copy_inventories(original_entity, cloned_entity)
+    copy_inventories_and_fluid(original_entity, cloned_entity)
+    copy_progress_bars(original_entity, cloned_entity)
     copy_resources(original_entity, cloned_entity)
     copy_circuit_connections(original_entity, cloned_entity)
     if (use_exact_power_wires) then
@@ -65,50 +66,24 @@ function copy_properties (original_entity, cloned_entity)
     cloned_entity.copy_settings(original_entity)
     cloned_entity.orientation = original_entity.orientation
     cloned_entity.direction = original_entity.direction
-    if has_value(original_entity.type, {"rocket-silo", "assembling-machine"}) then
-        cloned_entity.crafting_progress = original_entity.crafting_progress
-    end
-    if has_value(original_entity.type, {"rocket-silo"}) then
-        cloned_entity.crafting_progress = original_entity.crafting_progress
-        cloned_entity.rocket_parts = original_entity.rocket_parts
-    end
-    if (original_entity.burner) then
-        if (original_entity.burner.currently_burning) then
-            cloned_entity.burner.currently_burning = original_entity.burner.currently_burning
-            cloned_entity.burner.remaining_burning_fuel = original_entity.burner.remaining_burning_fuel
+end
+
+local function internal_inventory_copy(original_entity, cloned_entity, INV_DEFINE)
+    if (original_entity.get_inventory(INV_DEFINE)) then
+        local working_inventory = original_entity.get_inventory(INV_DEFINE)
+        for k=1, #working_inventory do
+            if (working_inventory[k].valid_for_read) then
+                cloned_entity.get_inventory(INV_DEFINE).insert(working_inventory[k])
+            end
         end
     end
 end
 
-function copy_inventories (original_entity, cloned_entity)
-    local INV_DEFINE
-    INV_DEFINE = defines.inventory.chest
-    if (original_entity.get_inventory(INV_DEFINE)) then
-        local working_inventory = original_entity.get_inventory(INV_DEFINE)
-        for k=1,#working_inventory do
-            if (working_inventory[k].valid_for_read) then
-                cloned_entity.insert(working_inventory[k])
-            end
-        end
-    end
-    INV_DEFINE = defines.inventory.rocket_silo_result
-    if (original_entity.get_inventory(INV_DEFINE)) then
-        local working_inventory = original_entity.get_inventory(INV_DEFINE)
-        for k=1,#working_inventory do
-            if (working_inventory[k].valid_for_read) then
-                cloned_entity.insert(working_inventory[k])
-            end
-        end
-    end
-    INV_DEFINE = defines.inventory.furnace_source
-    if (original_entity.get_inventory(INV_DEFINE)) then
-        local working_inventory = original_entity.get_inventory(INV_DEFINE)
-        for k=1,#working_inventory do
-            if (working_inventory[k].valid_for_read) then
-                cloned_entity.insert(working_inventory[k])
-            end
-        end
-    end
+function copy_inventories_and_fluid (original_entity, cloned_entity)
+    internal_inventory_copy(original_entity, cloned_entity, defines.inventory.chest)
+    internal_inventory_copy(original_entity, cloned_entity, defines.inventory.rocket_silo_result)
+    internal_inventory_copy(original_entity, cloned_entity, defines.inventory.furnace_source)
+    internal_inventory_copy(original_entity, cloned_entity, defines.inventory.furnace_result)
     if (original_entity.get_module_inventory()) then
         local working_inventory = original_entity.get_module_inventory()
         for k=1,#working_inventory do
@@ -128,6 +103,21 @@ function copy_inventories (original_entity, cloned_entity)
     if (#original_entity.fluidbox >= 1) then
         for x=1, #original_entity.fluidbox do
             cloned_entity.fluidbox[x] = original_entity.fluidbox[x]
+        end
+    end
+end
+
+function copy_progress_bars(original_entity, cloned_entity)
+    if has_value(original_entity.type, {"rocket-silo", "assembling-machine", "furnace"}) then
+        cloned_entity.crafting_progress = original_entity.crafting_progress
+        if (original_entity.type == "rocket-silo") then
+            cloned_entity.rocket_parts = original_entity.rocket_parts
+        end
+    end
+    if (original_entity.burner) then
+        if (original_entity.burner.currently_burning) then
+            cloned_entity.burner.currently_burning = original_entity.burner.currently_burning
+            cloned_entity.burner.remaining_burning_fuel = original_entity.burner.remaining_burning_fuel
         end
     end
 end
@@ -163,6 +153,9 @@ function copy_circuit_connections (original_entity, cloned_entity)
 end
 
 function copy_exact_power (original_entity, cloned_entity)
+    if(original_entity.type == "power-switch") then
+        game.players[1].print("WARN: it's not possible to copy the power connections for power switches in 0.16.51")
+    end
     if (original_entity.type == "electric-pole") then
         cloned_entity.disconnect_neighbour()
         for x=1, #cloned_entity.neighbours["copper"] do
@@ -220,7 +213,6 @@ function copy_transport_line_contents (original_entity, cloned_entity)
         local current_position = 0
         for item_name, item_amount in pairs(original_entity.get_transport_line(x).get_contents()) do
             for _=1, item_amount do
-                game.players[1].print(item_name .. " " .. item_amount)
                 cloned_entity.get_transport_line(x).insert_at(current_position,{name = item_name})
                 current_position = current_position + 0.28125
             end
