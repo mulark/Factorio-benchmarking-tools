@@ -33,6 +33,9 @@ local function check_primed_inserter (ent)
     if (ent.inserter_stack_size_override == 1) then
         return true
     end
+    if not (ent.held_stack.valid) then
+        game.players[1].teleport(ent.position)
+    end
     if (ent.held_stack.valid_for_read) then
         if (ent.held_stack.prototype.stack_size == 1) then
             return true

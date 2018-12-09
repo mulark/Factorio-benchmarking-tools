@@ -9,7 +9,7 @@ local start_tile = 0
 local times_to_paste = 1
 local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1000, start_tile}}, force="player"})
 local ticks_per_paste = 2
-local try_to_prime_inserters_pulling_from_belt = true
+local try_to_prime_inserters_pulling_from_belt = false
 local use_exact_power_wires = false
 local use_smart_map_charting_wip = false
 local copy_belt_contents = true
