@@ -24,6 +24,48 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
     end
 end
 
+/c
+for key, ent in pairs(game.player.surface.find_entities_filtered({name={"radar"}})) do
+    ent.destroy()
+end
+/c
+for key, ent in pairs(game.player.surface.find_entities_filtered({name={"solar-panel", "accumulator"}})) do
+    ent.destroy()
+end
+game.player.surface.create_entity({name = "electric-energy-interface", force = "player", position = {2876, -1446}})
+
+
+/c
+local count = 0
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="solar-panel"})) do
+    count = count + 1
+end
+game.player.print(count)
+
+/c
+local count = 0
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force={"neutral", "enemy"}, name={"solar-panel", "accumulator"}, invert=true})) do
+    count = count + 1
+end
+game.player.print(count)
+
+
+/c
+local surface= game.player.surface
+game.forces["player"].chart(surface, {{x = -110, y = -3830}, {x = 262, y = 0}})
+
+
+
+/c
+local count = 0
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="cargo-wagon"})) do
+    count = count + 1
+end
+game.player.print(count)
+
 
 /c
 local surface=game.player.surface
