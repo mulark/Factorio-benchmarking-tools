@@ -13,6 +13,7 @@ local try_to_prime_inserters_pulling_from_belt = false
 local use_exact_power_wires = false
 local use_smart_map_charting_wip = false
 local copy_belt_contents = true
+local clear_paste_area = false
 
 
 if ((tile_paste_length % 2) ~= 0) then
@@ -309,7 +310,9 @@ script.on_event(defines.events.on_tick, function(event)
             clean_entity_pool(entity_pool)
         end
         if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
-            clean_paste_area(surface, -1000, -1 * ((current_paste + 1) * tile_paste_length + 4), 1000, -1 * (current_paste * tile_paste_length))
+            if (clear_paste_area) then
+                clean_paste_area(surface,  -1000, -1 * ((current_paste + 1) * tile_paste_length + 4), 1000, -1 * (current_paste * tile_paste_length))
+            end
             for key, ent in pairs(entity_pool) do
                 local x_offset = ent.position.x + 0
                 local y_offset = ent.position.y - (tile_paste_length*current_paste)

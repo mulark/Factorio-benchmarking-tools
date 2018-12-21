@@ -302,18 +302,43 @@ game.player.teleport({furthest_ent_x, furthest_ent_y})
 
 
 
-/c local entity="car"
+/c
 local surface=game.player.surface
-local count=0
-for key, ent in pairs(surface.find_entities_filtered({force=game.player.force})) do
-	if string.find(ent.name,entity) then
-        local times=80
-        for x=1,times do
-            ent.get_inventory(2).set_filter(x, "raw-fish")
-        end
-        ent.get_inventory(2).set_filter(1, "copper-cable")
-        ent.get_inventory(2).set_filter(2, "iron-plate")
-	end
+for key, ent in pairs(surface.find_entities_filtered({force=game.player.force, name="tank"})) do
+    local times=80
+    for x=1,times do
+        ent.get_inventory(2).set_filter(x, "raw-fish")
+    end
+    ent.get_inventory(2).set_filter(1, "copper-cable")
+end
+
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force=game.player.force, name="car"})) do
+    local times=80
+    for x=1,times do
+        ent.get_inventory(2).set_filter(x, "raw-fish")
+    end
+    ent.get_inventory(2).set_filter(1, "copper-plate")
+end
+
+
+/c
+local surface=game.player.surface
+for key,ent in pairs(surface.find_entities_filtered{name = "tank"}) do
+    ent.insert("nuclear-fuel")
+end
+
+/c
+local surface=game.player.surface
+for key,ent in pairs(surface.find_entities_filtered{type = {"container", "inserter"}}) do
+    ent.clear_items_inside()
+end
+
+/c
+local surface=game.player.surface
+for key,ent in pairs(surface.find_entities_filtered{type = {"inserter"}}) do
+    ent.active = true
 end
 
 
@@ -783,6 +808,10 @@ for key, ent in pairs(surface.find_entities_filtered({name = ent_name, force = e
     end
 end
 
+/c local surface = game.player.surface
+for key,ent in pairs(surface.find_entities_filtered{force="player"}) do
+
+
 
 /c local surface = game.player.surface
 for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
@@ -804,6 +833,42 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
         end
     end
 end
+
+/measured-command
+local event = {}
+event.area = {{-32, 32}, {0, 64}}
+event.area.left_top = {-32, 32}
+event.area.right_bottom = {0, 64}
+event.area.left_top.x = -32
+event.area.left_top.y = 32
+event.area.right_bottom.x = 0
+event.area.right_bottom.y = 64
+event.surface = game.player.surface
+
+local function has_value (val, tab)
+    for index, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+    return false
+end
+
+local function pave_chunk(event)
+    local tiles = {}
+    for x = event.area.left_top.x, event.area.right_bottom.x do
+        for y = event.area.left_top.y, event.area.right_bottom.y do
+            local TILE_COMPARE_NAME = event.surface.get_tile({x, y}).name
+            if not has_value(TILE_COMPARE_NAME, {"water", "deepwater", "refined-concrete"}) then
+                table.insert(tiles, {name = "refined-concrete", position = {x,y}})
+            end
+            TILE_COMPARE_NAME = nil
+        end
+    end
+    event.surface.set_tiles(tiles, false)
+    tiles = nil
+end
+pave_chunk(event)
 
 
 /c local surface = game.player.surface
