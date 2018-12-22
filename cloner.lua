@@ -13,11 +13,13 @@ local try_to_prime_inserters_pulling_from_belt = false
 local use_exact_power_wires = false
 local use_smart_map_charting_wip = false
 local clear_paste_area = true
+local correct_for_rail_grid = false
 
 
-
-if ((tile_paste_length % 2) ~= 0) then
-    tile_paste_length = tile_paste_length + 1
+if (correct_for_rail_grid) then
+    if ((tile_paste_length % 2) ~= 0) then
+        tile_paste_length = tile_paste_length + 1
+    end
 end
 
 local function has_value (val, tab)
@@ -320,7 +322,11 @@ script.on_event(defines.events.on_tick, function(event)
                     if (ent.type == "underground-belt") then
                         create_entity_values.type = ent.belt_to_ground_type
                     end
-                    local newent = surface.create_entity(create_entity_values)
+                    local newent
+                    newent = surface.create_entity(create_entity_values)
+                    if not (newent) then
+                        newent = surface.find_entity(ent.name, {x_offset, y_offset})
+                    end
                     copy_entity(ent, newent)
                     if (newent.type == "inserter") then
                         table.insert(inserters_that_were_cloned, newent)
