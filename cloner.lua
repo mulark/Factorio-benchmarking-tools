@@ -5,16 +5,19 @@ local start_tick = (game.tick + 1)
 local inserters_that_were_cloned = {}
 
 local tile_paste_length = 64
-local start_tile = 0
+local start_tile_y_coord = 0
 local times_to_paste = 1
-local entity_pool = surface.find_entities_filtered({area={{-1000, (start_tile-tile_paste_length)}, {1000, start_tile}}, force="player"})
 local ticks_per_paste = 2
-local try_to_prime_inserters_pulling_from_belt = false
+local try_to_prime_inserters_pulling_from_belt = true
 local use_exact_power_wires = false
 local use_smart_map_charting_wip = false
 local clear_paste_area = true
 local correct_for_rail_grid = false
+local leftmost_x_region_to_copy = -1000
+local rightmost_x_region_to_copy = 1000
 
+local start_tile = start_tile_y_coord
+local entity_pool = surface.find_entities_filtered({area={{leftmost_x_region_to_copy, (start_tile-tile_paste_length)}, {rightmost_x_region_to_copy, start_tile}}, force="player"})
 
 if (correct_for_rail_grid) then
     if ((tile_paste_length % 2) ~= 0) then
@@ -304,6 +307,24 @@ local function check_primed_inserter (ent)
     return false
 end
 
+local function ensure_entity_pool_valid(pool)
+    for key,ent in pairs(pool) do
+        if not (ent.valid) then
+            pool[key] = nil
+            game.players[1].print("pool invalid member")
+        end
+    end
+end
+
+local function ensure_inserter_stack_valid(pool)
+    for key,ent in pairs(pool) do
+        if not (ent.held_stack.valid) then
+            pool[key] = nil
+            game.players[1].print("held_stack invalid")
+        end
+    end
+end
+
 local create_entity_values = {}
 script.on_event(defines.events.on_tick, function(event)
     for current_paste = 1, times_to_paste do
@@ -312,8 +333,12 @@ script.on_event(defines.events.on_tick, function(event)
         end
         if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
             if (clear_paste_area) then
-                clean_paste_area(surface,  -1000, -1 * ((current_paste + 1) * tile_paste_length + 4), 1000, -1 * (current_paste * tile_paste_length))
+                local top, bottom = 0
+                top = start_tile + tile_paste_length * -1 * (current_paste + 1)
+                bottom = start_tile + tile_paste_length * -1 * (current_paste)
+                clean_paste_area(surface,  leftmost_x_region_to_copy, top, rightmost_x_region_to_copy, bottom)
             end
+            ensure_entity_pool_valid(entity_pool)
             for key, ent in pairs(entity_pool) do
                 local x_offset = ent.position.x + 0
                 local y_offset = ent.position.y - (tile_paste_length*current_paste)
@@ -339,7 +364,7 @@ script.on_event(defines.events.on_tick, function(event)
             for key, ent in pairs(entity_pool) do
                 local x_offset = ent.position.x + 0
                 local y_offset = ent.position.y -(tile_paste_length*current_paste)
-                local create_entity_values = {name = ent.name, position={x_offset, y_offset}, direction=ent.direction, force="player"}
+                create_entity_values = {name = ent.name, position={x_offset, y_offset}, direction=ent.direction, force="player"}
                 if has_value(ent.type, low_priority_entities) then
                     local newent = surface.create_entity(create_entity_values)
                     copy_entity(ent, newent)
@@ -357,6 +382,7 @@ script.on_event(defines.events.on_tick, function(event)
                 game.forces["player"].chart_all()
             end
             if (try_to_prime_inserters_pulling_from_belt == true) then
+                ensure_inserter_stack_valid(inserters_that_were_cloned)
                 local inserters_to_prime = first_pass_throw_away_unneeded_inserters(inserters_that_were_cloned)
                 for _, ent in pairs(inserters_to_prime) do
                     if not (check_primed_inserter(ent)) then
