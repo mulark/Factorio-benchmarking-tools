@@ -1,5 +1,5 @@
 /silent-command
-local surface=game.player.surface
+local surface=game.surfaces[1]
 local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot", "fluid-wagon"}
 local start_tick = (game.tick + 1)
 local inserters_that_were_cloned = {}
@@ -12,8 +12,8 @@ local ticks_per_paste = 2
 local try_to_prime_inserters_pulling_from_belt = false
 local use_exact_power_wires = false
 local use_smart_map_charting_wip = false
-local copy_belt_contents = true
-local clear_paste_area = false
+local clear_paste_area = true
+
 
 
 if ((tile_paste_length % 2) ~= 0) then
@@ -56,9 +56,7 @@ function copy_entity (original_entity, cloned_entity)
     end
     copy_train(original_entity, cloned_entity)
     cloned_entity.update_connections()
-    if (copy_belt_contents) then
-        copy_transport_line_contents(original_entity, cloned_entity)
-    end
+    copy_transport_line_contents(original_entity, cloned_entity)
 end
 
 function copy_properties (original_entity, cloned_entity)
@@ -304,6 +302,7 @@ local function check_primed_inserter (ent)
     return false
 end
 
+local create_entity_values = {}
 script.on_event(defines.events.on_tick, function(event)
     for current_paste = 1, times_to_paste do
         if (game.tick == start_tick) then
@@ -316,13 +315,12 @@ script.on_event(defines.events.on_tick, function(event)
             for key, ent in pairs(entity_pool) do
                 local x_offset = ent.position.x + 0
                 local y_offset = ent.position.y - (tile_paste_length*current_paste)
-                local create_entity_values = {name = ent.name, position={x_offset, y_offset}, direction=ent.direction, force="player"}
+                create_entity_values = {name = ent.name, position={x_offset, y_offset}, direction=ent.direction, force="player"}
                 if not has_value(ent.type, low_priority_entities) then
                     if (ent.type == "underground-belt") then
                         create_entity_values.type = ent.belt_to_ground_type
                     end
-                    surface.create_entity(create_entity_values)
-                    local newent = surface.find_entity(ent.name, {x_offset, y_offset})
+                    local newent = surface.create_entity(create_entity_values)
                     copy_entity(ent, newent)
                     if (newent.type == "inserter") then
                         table.insert(inserters_that_were_cloned, newent)
@@ -337,8 +335,7 @@ script.on_event(defines.events.on_tick, function(event)
                 local y_offset = ent.position.y -(tile_paste_length*current_paste)
                 local create_entity_values = {name = ent.name, position={x_offset, y_offset}, direction=ent.direction, force="player"}
                 if has_value(ent.type, low_priority_entities) then
-                    surface.create_entity(create_entity_values)
-                    local newent = surface.find_entity(ent.name, {x_offset, y_offset})
+                    local newent = surface.create_entity(create_entity_values)
                     copy_entity(ent, newent)
                     newent = nil
                 end

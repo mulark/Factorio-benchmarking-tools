@@ -54,7 +54,21 @@ game.player.print(count)
 
 /c
 local surface= game.player.surface
-game.forces["player"].chart(surface, {{x = -110, y = -3830}, {x = 262, y = 0}})
+game.forces["player"].chart(surface, {{x = -110, y = -3830}, {x = 671, y = 0}})
+
+
+/c
+local surface= game.player.surface
+game.write_file("item_amounts.csv", "Entity_name,Entity_amount\n", true)
+for _, prototype in pairs (game.entity_prototypes) do
+    local count = 0
+    for _, ent in pairs (surface.find_entities_filtered({name = prototype.name, force = "player"})) do
+        count = count + 1
+    end
+    if (count > 0) then
+        game.write_file("item_amounts.csv", prototype.name .. "," .. count .. "\n", true)
+    end
+end
 
 
 
@@ -322,6 +336,19 @@ for key, ent in pairs(surface.find_entities_filtered({force=game.player.force, n
     ent.get_inventory(2).set_filter(1, "copper-plate")
 end
 
+--[[Clear the contents of a train--]]
+/c
+for key, ent in pairs(game.player.selected.train.carriages) do
+    ent.clear_items_inside()
+end
+
+
+
+/c
+function newlog(text)
+    log(text)
+end
+
 
 /c
 local surface=game.player.surface
@@ -352,8 +379,35 @@ for key, ent in pairs (surface.find_entities_filtered{force="player"}) do
     end
 end
 
+/c
+local surface=game.player.surface
+for key, ent in pairs (surface.find_entities_filtered{force="neutral"}) do
+    ent.destroy()
+end
 
+/c commands.add_command("foo", "a", function(param)
+    local player = game.players[param.player_index]
+    game.player.print("foo")
+    log("foo")
+end)
 
+/c commands.add_command("slap", "Slap a player. (usage: /slap somePlayerName)", function(param)
+	local player = game.players[param.player_index]
+ 	if param.parameter then
+		local victim = game.players[param.parameter]
+		if victim then
+			if victim.connected then
+	            startSlapping(victim, player, SLAP_DEFAULT_AMOUNT)
+	        else
+	            slSays(player, victim.name .. " is not online")
+	        end
+		else
+			slSays(player, "Player not found: (" .. param.parameter .. ")")
+		end
+ 	else
+		slSays(player, "Player name needed. (usage: /slap somePlayerName)")
+	end
+end)
 
 
 
