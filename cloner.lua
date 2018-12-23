@@ -10,7 +10,7 @@ local times_to_paste = 1
 local ticks_per_paste = 2
 local try_to_prime_inserters_pulling_from_belt = true
 local use_exact_power_wires = false
-local use_smart_map_charting_wip = false
+local use_smart_map_charting = true
 local clear_paste_area = true
 local correct_for_rail_grid = false
 local leftmost_x_region_to_copy = -1000
@@ -225,18 +225,6 @@ function copy_transport_line_contents (original_entity, cloned_entity)
     end
 end
 
-function clean_entity_pool (entity_pool)
-    for key, ent in pairs(entity_pool) do
-        if has_value(ent.type,{"player", "entity-ghost", "tile-ghost"}) then
-            entity_pool[key] = nil
-        else
-            if not has_value(ent.type, {"decider-combinator", "arithmetic-combinator"}) then
-                ent.active = false
-            end
-        end
-    end
-end
-
 local function first_pass_throw_away_unneeded_inserters (pool)
     local freshpool = {}
     for key, ent in pairs (pool) do
@@ -292,7 +280,11 @@ local function check_primed_inserter (ent)
             end
         end
         if (item_to_hold == "") then
-            item_to_hold = ent.drop_target.get_inventory(defines.inventory.chest)[1].name
+            if (ent.drop_target.get_inventory(defines.inventory.chest)[1].valid_for_read) then
+                item_to_hold = ent.drop_target.get_inventory(defines.inventory.chest)[1].name
+            else
+                return true
+            end
         end
         local items_inside = ent.drop_target.get_item_count(item_to_hold)
         local slots = ent.drop_target.get_inventory(defines.inventory.chest).getbar() - 1
@@ -307,6 +299,18 @@ local function check_primed_inserter (ent)
     return false
 end
 
+function clean_entity_pool (entity_pool)
+    for key, ent in pairs(entity_pool) do
+        if has_value(ent.type,{"player", "entity-ghost", "tile-ghost"}) then
+            entity_pool[key] = nil
+        else
+            if not has_value(ent.type, {"decider-combinator", "arithmetic-combinator"}) then
+                ent.active = false
+            end
+        end
+    end
+end
+
 local function ensure_entity_pool_valid(pool)
     for key,ent in pairs(pool) do
         if not (ent.valid) then
@@ -314,6 +318,23 @@ local function ensure_entity_pool_valid(pool)
             game.players[1].print("pool invalid member")
         end
     end
+end
+
+local function find_charting_coordinates(entity_pool)
+    local left, right
+    for key,ent in pairs (entity_pool) do
+        if not (left) then
+            left = ent.position.x
+            right = ent.position.x
+        end
+        if (left > ent.position.x) then
+            left = ent.position.x
+        end
+        if (right < ent.position.x) then
+            right = ent.position.x
+        end
+    end
+    return left, right
 end
 
 local function ensure_inserter_stack_valid(pool)
@@ -325,6 +346,7 @@ local function ensure_inserter_stack_valid(pool)
     end
 end
 
+local left_coord_to_chart, right_coord_to_chart = find_charting_coordinates(entity_pool)
 local create_entity_values = {}
 script.on_event(defines.events.on_tick, function(event)
     for current_paste = 1, times_to_paste do
@@ -371,6 +393,11 @@ script.on_event(defines.events.on_tick, function(event)
                     newent = nil
                 end
             end
+            if (use_smart_map_charting) then
+                local top = -1 * (start_tile + (current_paste + 1) * tile_paste_length)
+                local bottom = -1 * (start_tile + (current_paste) * tile_paste_length)
+                game.forces["player"].chart(surface, {{left_coord_to_chart, top}, {right_coord_to_chart, bottom}})
+            end
         end
         if (game.tick == (start_tick + ((times_to_paste + 1)*ticks_per_paste) + 600 )) then
             for key, ent in pairs(entity_pool) do
@@ -382,7 +409,6 @@ script.on_event(defines.events.on_tick, function(event)
                 game.forces["player"].chart_all()
             end
             if (try_to_prime_inserters_pulling_from_belt == true) then
-                ensure_inserter_stack_valid(inserters_that_were_cloned)
                 local inserters_to_prime = first_pass_throw_away_unneeded_inserters(inserters_that_were_cloned)
                 for _, ent in pairs(inserters_to_prime) do
                     if not (check_primed_inserter(ent)) then
