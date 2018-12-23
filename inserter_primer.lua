@@ -71,7 +71,11 @@ local function check_primed_inserter (ent)
             end
         end
         if (item_to_hold == "") then
-            item_to_hold = ent.drop_target.get_inventory(defines.inventory.chest)[1].name
+            if (ent.drop_target.get_inventory(defines.inventory.chest)[1].valid_for_read) then
+                item_to_hold = ent.drop_target.get_inventory(defines.inventory.chest)[1].name
+            else
+                return true
+            end
         end
         local items_inside = ent.drop_target.get_item_count(item_to_hold)
         local slots = ent.drop_target.get_inventory(defines.inventory.chest).getbar() - 1
