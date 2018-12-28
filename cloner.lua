@@ -4,10 +4,12 @@ local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-
 local start_tick = (game.tick + 1)
 local inserters_that_were_cloned = {}
 
+--[[Currently script only copies to the north!--]]
 local tile_paste_length = 64
 local start_tile_y_coord = 0
 local times_to_paste = 1
 local ticks_per_paste = 2
+--[[Recommended to use standalone inserter_primer.lua instead of this option--]]
 local try_to_prime_inserters_pulling_from_belt = false
 local use_exact_power_wires = false
 local use_smart_map_charting = true

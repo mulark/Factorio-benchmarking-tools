@@ -70,6 +70,31 @@ for _, prototype in pairs (game.entity_prototypes) do
     end
 end
 
+/c
+local surface= game.player.surface
+game.write_file("item_amounts.csv", "Entity_name,Entity_amount\n", true)
+for _, prototype in pairs (game.entity_prototypes) do
+    local count = 0
+    for _, ent in pairs (surface.find_entities_filtered({name = prototype.name, force = "player"})) do
+        count = count + 1
+    end
+    if (count > 0) then
+        game.player.print(prototype.name .. "," .. count)
+    end
+end
+
+
+/c
+
+script.on_event(defines.events.on_marked_for_deconstruction, function(event)
+    game.players[1].print(event.entity.last_user.name)
+    if not event.entity.last_user or event.entity.name == 'entity-ghost' or event.entity.last_user == game.players[event.player_index] then
+        game.players[1].print("allowed")
+    else
+        event.entity.cancel_deconstruction('player')
+        game.players[1].print("not allowed")
+    end
+end)
 
 
 /c
