@@ -35,17 +35,19 @@ end
 
 local function clean_paste_area (surface, left, top, right, bottom)
     local second_try_destroy_entities = {}
-    for key, ent in pairs(surface.find_entities_filtered({area={{left, top},{right, bottom}}, force="player"})) do
-        if (ent.type ~= "player") then
-            ent.clear_items_inside()
-            if not (ent.can_be_destroyed()) then
-                table.insert(second_try_destroy_entities, ent)
+    for key, ent in pairs(surface.find_entities_filtered({area={{left, top},{right, bottom}}})) do
+        if (ent.valid) then
+            if (ent.type ~= "player") then
+                ent.clear_items_inside()
+                if not (ent.can_be_destroyed()) then
+                    table.insert(second_try_destroy_entities, ent)
+                end
+                ent.destroy()
             end
+        end
+        for key, ent in pairs(second_try_destroy_entities) do
             ent.destroy()
         end
-    end
-    for key, ent in pairs(second_try_destroy_entities) do
-        ent.destroy()
     end
 end
 
@@ -56,6 +58,7 @@ function copy_entity (original_entity, cloned_entity)
     copy_resources(original_entity, cloned_entity)
     copy_circuit_connections(original_entity, cloned_entity)
     copy_train(original_entity, cloned_entity)
+    --[[updating connections probably doesn't do anything, since anything that could be affected by a beacon already exists by the time beacons are cloned--]]
     cloned_entity.update_connections()
     copy_transport_line_contents(original_entity, cloned_entity)
 end
@@ -130,10 +133,14 @@ function copy_resources (original_entity, cloned_entity)
             for key, resource_to_clear in pairs(surface.find_entities_filtered({type = "resource", position={cloned_entity.position.x, cloned_entity.position.y}})) do
                 resource_to_clear.destroy()
             end
-            surface.create_entity({name = resource.name, position = cloned_entity.position, force = "neutral", amount = resource.amount})
+            local cloned_resource = surface.create_entity({name = resource.name, position = cloned_entity.position, force = "neutral", amount = resource.amount})
+            --[[If we're not an infinite resource, then go ahead and ensure we have enough material--]]
             if (resource.initial_amount) then
                 local newresource = surface.find_entity(resource.name, cloned_entity.position)
                 newresource.initial_amount = resource.initial_amount
+            else
+                resource.amount = 1000000
+                cloned_resource.amount = 1000000
             end
         end
     end
@@ -205,11 +212,17 @@ end
 
 function clean_entity_pool (entity_pool)
     for key, ent in pairs(entity_pool) do
-        if has_value(ent.type,{"player", "entity-ghost", "tile-ghost"}) then
+        if not (ent.valid) then
+            game.players[1].print(ent.name .. key)
+            game.players[1].teleport(ent.position)
+        end
+        if has_value(ent.type, {"player", "entity-ghost", "tile-ghost"}) then
             entity_pool[key] = nil
         else
-            if not has_value(ent.type, {"decider-combinator", "arithmetic-combinator"}) then
-                ent.active = false
+            if (ent.valid) then
+                if not has_value(ent.type, {"decider-combinator", "arithmetic-combinator"}) then
+                    ent.active = false
+                end
             end
         end
     end
@@ -298,8 +311,8 @@ script.on_event(defines.events.on_tick, function(event)
                 end
             end
             if (use_smart_map_charting) then
-                local top = -1 * (start_tile + (current_paste + 1) * tile_paste_length)
-                local bottom = -1 * (start_tile + (current_paste) * tile_paste_length)
+                local top = (-1 * ((current_paste + 1) * tile_paste_length)) + start_tile
+                local bottom = (-1 * (current_paste * tile_paste_length)) + start_tile
                 game.forces["player"].chart(surface, {{left_coord_to_chart, top}, {right_coord_to_chart, bottom}})
             end
         end

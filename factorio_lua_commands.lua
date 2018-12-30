@@ -24,6 +24,38 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
     end
 end
 
+/silent-command
+game.player.surface.create_entity({name="offshore-pump",position=game.player.selected.position, direction=2, force = "player"})
+game.player.selected.destroy()
+
+/silent-command
+game.player.surface.create_entity({name="crude-oil",position=game.player.selected.position, force = "neutral", amount=1000000})
+game.player.selected.destroy()
+
+/c
+local clone = game.player.surface.create_entity({position=game.player.selected.position, name="electric-mining-drill", force="player"})
+local left = clone.position.x - clone.prototype.mining_drill_radius
+local right = clone.position.x + clone.prototype.mining_drill_radius
+local top = clone.position.y - clone.prototype.mining_drill_radius
+local bottom = clone.position.y + clone.prototype.mining_drill_radius
+local flag = false
+for _,resource in pairs (game.player.surface.find_entities_filtered({type="resource", area={{left, top}, {right, bottom}}, force="neutral"})) do
+    if (resource) then
+        flag = true
+    end
+end
+if not (flag) then
+    clone.destroy()
+end
+
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({})) do
+    if string.find(ent.name, "creative") then
+        ent.destroy()
+    end
+end
+
 /c
 for key, ent in pairs(game.player.surface.find_entities_filtered({name={"radar"}})) do
     ent.destroy()
@@ -343,12 +375,17 @@ game.player.teleport({furthest_ent_x, furthest_ent_y})
 
 /c
 local surface=game.player.surface
-for key, ent in pairs(surface.find_entities_filtered({force=game.player.force, name="tank"})) do
+for key, ent in pairs(surface.find_entities_filtered({force=game.player.force, name="car"})) do
     local times=80
     for x=1,times do
         ent.get_inventory(2).set_filter(x, "raw-fish")
     end
     ent.get_inventory(2).set_filter(1, "copper-cable")
+end
+
+/c
+for abc, def in pairs (game.player.selected.prototype.collision_mask) do
+    game.player.print(abc .. " " .. game.player.selected.name)
 end
 
 /c
