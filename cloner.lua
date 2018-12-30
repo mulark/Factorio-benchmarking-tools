@@ -139,8 +139,8 @@ function copy_resources (original_entity, cloned_entity)
                 local newresource = surface.find_entity(resource.name, cloned_entity.position)
                 newresource.initial_amount = resource.initial_amount
             else
-                resource.amount = 1000000
-                cloned_resource.amount = 1000000
+                resource.amount = 10000000
+                cloned_resource.amount = 10000000
             end
         end
     end
@@ -213,7 +213,7 @@ end
 function clean_entity_pool (entity_pool)
     for key, ent in pairs(entity_pool) do
         if not (ent.valid) then
-            game.players[1].print(ent.name .. key)
+            game.players[1].print(key)
             game.players[1].teleport(ent.position)
         end
         if has_value(ent.type, {"player", "entity-ghost", "tile-ghost"}) then
@@ -263,13 +263,11 @@ local function ensure_inserter_stack_valid(pool)
     end
 end
 
+clean_entity_pool(entity_pool)
 local left_coord_to_chart, right_coord_to_chart = find_charting_coordinates(entity_pool)
 local create_entity_values = {}
 script.on_event(defines.events.on_tick, function(event)
     for current_paste = 1, times_to_paste do
-        if (game.tick == start_tick) then
-            clean_entity_pool(entity_pool)
-        end
         if (game.tick == (start_tick + (current_paste * ticks_per_paste))) then
             if (clear_paste_area) then
                 local top, bottom = 0
