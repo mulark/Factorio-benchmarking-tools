@@ -104,7 +104,6 @@ end
 
 /c
 local surface= game.player.surface
-game.write_file("item_amounts.csv", "Entity_name,Entity_amount\n", true)
 for _, prototype in pairs (game.entity_prototypes) do
     local count = 0
     for _, ent in pairs (surface.find_entities_filtered({name = prototype.name, force = "player"})) do
@@ -626,6 +625,16 @@ for key, ent in pairs(surface.find_entities_filtered({type = class})) do
 end
 
 
+/c local namen="logistic-chest-buffer"
+local count = 0
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({name = namen, force = "player"})) do
+        game.player.print("X: " .. ent.position.x .. "Y: " .. ent.position.y)
+        game.player.teleport({ent.position.x, ent.position.y})
+        count = count + 1
+end
+game.player.print(count)
+
 /c local class="entity-ghost"
 local count = 0
 local surface=game.player.surface
@@ -651,6 +660,8 @@ game.player.print(count)
 
 
 /c game.forces.player.chart(game.player.surface, {{x = 0, y = -3000}, {x = 1000, y = 0}})
+
+/c game.forces.player.chart(game.player.surface, {{x = -893, y = -20960}, {x = -272, y = 640}})
 
 
 /c local entity="requester"
