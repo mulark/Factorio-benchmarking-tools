@@ -7,8 +7,8 @@
 /c
 game.player.force.technologies['mining-productivity-16'].researched=false;
 local times=1840
-for x=1, times do game.player.force.technologies['mining-productivity-16'].researched=true
-end
+for x=1, times do game.player.force.technologies['mining-productivity-16'].researched=true end
+
 /c
 game.player.force.technologies['worker-robots-speed-6'].researched=false;
 local times=20
@@ -22,6 +22,27 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
     if (ent.type ~="player") then
         ent.destroy()
     end
+end
+
+/c
+local player = game.player
+local function get_region_bounding_box(player)
+    local bounding_box = {}
+    local left_top = {}
+    local right_bottom = {}
+    local coord_table = mod_gui.get_frame_flow(player)["region-cloner_control-window"]["region-cloner_coordinate-table"]
+    left_top["x"] = tonumber(coord_table["left_top_x"].text)
+    left_top["y"] = tonumber(coord_table["left_top_y"].text)
+    right_bottom["x"] = tonumber(coord_table["right_bottom_x"].text)
+    right_bottom["y"] = tonumber(coord_table["right_bottom_y"].text)
+    bounding_box["left_top"] = left_top
+    bounding_box["right_bottom"] = right_bottom
+    player.print(serpent.line(bounding_box))
+    return bounding_box
+end
+local box = get_region_bounding_box(player)
+for _, ent in pairs(game.player.surface.find_entities_filtered{area=box}) do
+    player.print(ent.name)
 end
 
 /silent-command
@@ -82,6 +103,10 @@ for key, ent in pairs(surface.find_entities_filtered({force={"neutral", "enemy"}
     count = count + 1
 end
 game.player.print(count)
+
+
+/c game.player.insert("dummy-selection-tool")
+script.on_event(defines.events.on_player_selected_area, function(args) game.print(serpent.line(args.area)) end)
 
 
 /c
@@ -606,7 +631,15 @@ for key, ent in pairs(surface.find_entities_filtered({name = entity, force=game.
 end
 
 
+/c
+if (game.player.selected.train.front_stock == game.player.selected) then
+    game.player.print("true")
+end
 
+/c
+if (game.player.selected.disconnect_rolling_stock(defines.)== game.player.selected) then
+    game.player.print("true")
+end
 
 
 /c local entity="express-transport-belt"
@@ -774,6 +807,46 @@ entity_pool = surface.find_entities_filtered{name=water_input_entities, force="p
 entity_pool = clean_pool(entity_pool)
 place_offshores(entity_pool)
 
+
+/c
+for x=-150,150 do
+    for y=-150,150 do
+        game.player.surface.create_entity({name="straight-rail", force="player", position={x * 10,y * 10}})
+    end
+end
+
+/c
+local count = 0
+for a, b in pairs(game.player.surface.find_entities_filtered({name="car"})) do
+    b.active = false
+    count = count + 1
+end
+game.player.print(count)
+
+/c
+local x = 0
+local surface = game.player.surface
+for _, prototype in pairs(game.entity_prototypes) do
+    game.player.print(prototype.type)
+    if prototype.type ~= "projectile" then
+        if prototype.type ~= "explosion" then
+            surface.create_entity({name= prototype.name, position = {5*x, 64}, force="player"})
+        end
+    end
+    x = x + 1
+end
+
+/c game.player.print(serpent.line(game.entity_prototypes.name))
+
+/c
+for _, ent in pairs(game.player.surface.find_entities_filtered{force="player"}) do
+    local var = "false"
+    if ent.supports_direction then
+        var = "true"
+        game.player.print(ent.name .. " supports_direction: " .. var)
+    end
+
+end
 
 
 

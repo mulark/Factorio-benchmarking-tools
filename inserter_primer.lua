@@ -62,6 +62,7 @@ local function check_primed_inserter (ent)
     end
     if not (ent.held_stack.valid_for_read) then
         local item_to_hold = ""
+        --[[TODO: check if this actually works for no items on belt]]
         for name, _ in pairs (ent.pickup_target.get_transport_line(2).get_contents()) do
             item_to_hold = name
         end

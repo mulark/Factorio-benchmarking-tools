@@ -284,8 +284,7 @@ script.on_event(defines.events.on_tick, function(event)
                     if (ent.type == "underground-belt") then
                         create_entity_values.type = ent.belt_to_ground_type
                     end
-                    local newent
-                    newent = surface.create_entity(create_entity_values)
+                    local newent = surface.create_entity(create_entity_values)
                     if not (newent) then
                         newent = surface.find_entity(ent.name, {x_offset, y_offset})
                     end
