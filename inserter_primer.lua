@@ -102,7 +102,9 @@ for key,ent in pairs (inserters_to_prime) do
         if (ent.held_stack.valid_for_read) then
             ent.drop_target.remove_item({name = ent.held_stack.name, amount = 1})
         else
-            ent.drop_target.remove_item({name = ent.drop_target.get_inventory(defines.inventory.chest)[1].name, amount = 1})
+            if (ent.drop_target.get_inventory(defines.inventory.chest)[1].valid_for_read) then
+                ent.drop_target.remove_item({name = ent.drop_target.get_inventory(defines.inventory.chest)[1].name, amount = 1})
+            end
         end
     else
         already_primed_inserters = already_primed_inserters + 1
