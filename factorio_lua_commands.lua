@@ -45,6 +45,14 @@ for _, ent in pairs(game.player.surface.find_entities_filtered{area=box}) do
     player.print(ent.name)
 end
 
+/c
+game.player.print(serpent.line(game.players))
+
+/c
+for idx, player in pairs (game.players) do
+    game.player.print(idx)
+end
+
 /silent-command
 game.player.surface.create_entity({name="offshore-pump",position=game.player.selected.position, direction=2, force = "player"})
 game.player.selected.destroy()
@@ -74,6 +82,16 @@ local surface=game.player.surface
 for key, ent in pairs(surface.find_entities_filtered({})) do
     if string.find(ent.name, "creative") then
         ent.destroy()
+    end
+end
+
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({})) do
+    if string.find(ent.name, "reactor") then
+        if (ent.temperature) then
+            ent.temperature = 500
+        end
     end
 end
 
@@ -811,17 +829,60 @@ place_offshores(entity_pool)
 /c
 for x=-150,150 do
     for y=-150,150 do
-        game.player.surface.create_entity({name="straight-rail", force="player", position={x * 10,y * 10}})
+        game.player.surface.create_entity({name="express-transport-belt", force="player", position={x,y}, direction = 0})
     end
 end
 
 /c
+for x=-150,150 do
+    for y=-150,150 do
+        game.player.surface.create_entity({name="car", force="player", position={x*3,y*2.1}, direction = 4})
+    end
+end
+
+/c
+for x=-150,150 do
+    for y=-2750,750 do
+        game.player.surface.create_entity({name="express-transport-belt", force="player", position={x*3,y}, direction = 0})
+    end
+end
+
+/c
+game.player.chart(game.player.surface, {{-750, -2750},{750,750}})
+
+
+/c
+--[[create car, remember to set direction]]
+for x=-150,150 do
+    for y=-150,150 do
+        game.player.surface.create_entity({name="car", force="player", position={x*3,y*2.1}, direction = 4})
+    end
+end
+
+/c
+--[[create car, remember to set direction]]
+for x=-150,150 do
+    for y=-150,150 do
+        game.player.surface.create_entity({name="car", force="player", position={x*5,y*5}, direction = 4})
+    end
+end
+
+
+/c
+local tiles={}
+for x=-55,50 do
+    for y=-700,150 do
+        table.insert(tiles, {name = "refined-concrete", position = {x,y}})
+    end
+end
+game.player.surface.set_tiles(tiles, false)
+
+/c
 local count = 0
 for a, b in pairs(game.player.surface.find_entities_filtered({name="car"})) do
-    b.active = false
     count = count + 1
 end
-game.player.print(count)
+game.print(count)
 
 /c
 local x = 0
@@ -1239,4 +1300,9 @@ function prime_inserters(surface)
             end
         end
     end
+end
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{}) do
+    ent.destroy()
 end
