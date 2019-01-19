@@ -1,5 +1,6 @@
 /silent-command
 --[[This script takes an existing map and places offshore pumps directly into fluid input slots. This has been observed to improve performance. This script also removes all existing pipes with water in them. --]]
+--[[In vanilla the fluidbox with index 1 is always water on entities which require water input. Modded entities that do not follow this rule won't work.]]
 for key,ent in pairs(game.player.surface.find_entities_filtered({name="offshore-pump"})) do
     ent.destroy()
 end

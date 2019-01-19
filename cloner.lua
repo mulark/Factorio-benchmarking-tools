@@ -1,4 +1,12 @@
 /silent-command
+
+--[[
+It if reccomended to use the region cloner mod instead of this script.
+There are a small number of this for which this script is useful for, but it is unmaintained.
+]]
+
+
+
 local surface=game.surfaces[1]
 local low_priority_entities = {"beacon", "locomotive", "cargo-wagon", "logistic-robot", "construction-robot", "fluid-wagon"}
 local start_tick = (game.tick + 1)

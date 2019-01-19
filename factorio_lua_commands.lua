@@ -54,7 +54,7 @@ for idx, player in pairs (game.players) do
 end
 
 /silent-command
-game.player.surface.create_entity({name="offshore-pump",position=game.player.selected.position, direction=2, force = "player"})
+game.player.surface.create_entity({name="offshore-pump",position=game.player.selected.position, direction=4, force = "player"})
 game.player.selected.destroy()
 
 /silent-command
@@ -96,6 +96,11 @@ for key, ent in pairs(surface.find_entities_filtered({})) do
 end
 
 /c
+for key, ent in pairs(game.player.surface.find_entities_filtered({name={"logistic-chest-requester"}})) do
+
+end
+
+/c
 for key, ent in pairs(game.player.surface.find_entities_filtered({name={"radar"}})) do
     ent.destroy()
 end
@@ -105,6 +110,11 @@ for key, ent in pairs(game.player.surface.find_entities_filtered({name={"solar-p
 end
 game.player.surface.create_entity({name = "electric-energy-interface", force = "player", position = {2876, -1446}})
 
+/c
+local player = game.player
+player.insert("electric-energy-interface")
+player.insert("infinity-chest")
+
 
 /c
 local count = 0
@@ -113,6 +123,14 @@ for key, ent in pairs(surface.find_entities_filtered({force="player", name="sola
     count = count + 1
 end
 game.player.print(count)
+
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="electric-mining-drill"})) do
+    if (ent.mining_target) then
+        ent.mining_target.amount=10000000
+    end
+end
 
 /c
 local count = 0
@@ -714,6 +732,8 @@ game.player.print(count)
 
 /c game.forces.player.chart(game.player.surface, {{x = -893, y = -20960}, {x = -272, y = 640}})
 
+/c game.player.force.chart(game.player.surface, {{-896, -21000},{192, 640}})
+
 
 /c local entity="requester"
 local surface=game.player.surface
@@ -1305,4 +1325,198 @@ end
 /c
 for key,ent in pairs (game.player.surface.find_entities_filtered{}) do
     ent.destroy()
+end
+
+/c
+local count = 0
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    count = count + 1
+end
+game.print(count)
+
+/c game.player.print(serpent.line(game.player.selected.get_control_behavior().get_signal(1)))
+
+/c game.player.print(serpent.line(game.player.selected.get_control_behavior().enabled))
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.insert("nuclear-fuel")
+end
+
+/c
+for _, ent in pairs(game.player.surface.find_entities_filtered{}) do
+    if (ent.position.y > 0) then
+        ent.destroy()
+    end
+end
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.disconnect_rolling_stock(defines.rail_direction.front)
+    ent.train.manual_mode = false
+end
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.manual_mode = false
+end
+
+/c
+local tiles={}
+for x=0,31 do
+    for y=0,31 do
+        table.insert(tiles, {name = "refined-concrete", position = {x,y}})
+    end
+end
+game.player.surface.set_tiles(tiles, false)
+
+/c
+local beacons_to_refresh = {}
+for _, ent in pairs(game.player.surface.find_entities_filtered{name = "beacon"}) do
+    table.insert(beacons_to_refresh, ent.position)
+    ent.destroy()
+end
+for _, ent in pairs(game.player.surface.find_entities_filtered{type = "inserter"}) do
+    ent.active = true
+end
+local start = game.tick
+script.on_event(defines.events.on_tick, function(event)
+    if (game.tick > start) then
+        for _, position in pairs(beacons_to_refresh) do
+            local refreshed_beacon = game.surfaces[1].create_entity({name="beacon", position = position, force = "player"})
+            refreshed_beacon.insert("speed-module-3")
+        end
+        script.on_event(defines.events.on_tick, nil)
+    end
+end)
+
+/c
+for _, ent in pairs(game.player.surface.find_entities_filtered({name="substation"})) do
+    ent.disconnect_neighbour()
+end
+
+/c
+local count = 0
+for _, ent in pairs(game.player.surface.find_entities_filtered({name="substation"})) do
+    count = count + 1
+end
+game.print(count)
+
+/c
+for x=-4.5,-400.5,-26 do
+    for y=390,82,-8 do
+        local ent = game.player.surface.create_entity({name="car", position={x,y}, force="player"})
+        ent.get_inventory(defines.inventory.chest).insert("nuclear-fuel")
+    end
+end
+
+/c
+for x=-4.5,-550.5,-26 do
+    for y=390,82,-8 do
+        local ent = game.player.surface.create_entity({name="car", position={x,y}, force="player"})
+        ent.get_inventory(defines.inventory.chest).insert("nuclear-fuel")
+    end
+end
+
+/c
+substation_to_refresh = {}
+for _, ent in pairs(game.player.surface.find_entities_filtered{name = "substation"}) do
+    table.insert(substation_to_refresh, ent.position)
+    ent.destroy()
+end
+for _, position in pairs(substation_to_refresh) do
+    game.surfaces[1].create_entity({name="substation", position = position, force = "player"})
+end
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="car"}) do
+    if (ent.position.x < 0) then
+        ent.destroy()
+    end
+end
+
+/c
+local count = 0
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="car"}) do
+    count = count + 1
+    ent.get_inventory(defines.inventory.chest).insert("nuclear-fuel")
+end
+game.print(count)
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{area={{16, 0},{32, 32}}}) do
+    game.print(_ .. " " .. ent.position.x .. ", " .. ent.position.y .. " " .. ent.name)
+end
+
+/c
+function round_to_rail_grid_midpoint(x)
+    local foo = math.floor(x)
+    if (foo % 2 ~= 0) then
+        return foo
+    else
+        return foo + 1
+    end
+end
+local sel = game.player.selected
+local pos = {round_to_rail_grid_midpoint(sel.position.x) + 0.1, round_to_rail_grid_midpoint(sel.position.y)}
+game.print(serpent.line(pos))
+for _,ent in pairs(game.player.surface.find_entities_filtered{position=pos}) do
+    game.print(_ .. " " .. ent.position.x .. ", " .. ent.position.y .. " " .. ent.name)
+end
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{position=game.player.selected.position}) do
+    game.print(ent.position.x .. ", " .. ent.position.y .. " " .. ent.name)
+end
+
+/c local test = {}
+for _, ent in pairs (game.player.surface.find_entities_filtered{position=game.player.selected.position}) do
+    test = ent
+end
+test = nil
+
+
+/c game.player.print((game.player.selected.orientation * -1)+90 % 360)
+
+/c
+local initial_x = 64
+local initial_y = 64
+for x=0, 1, 0.05 do
+    game.player.surface.create_entity{name="car", position = {initial_x * x, initial_y}, force="player"}
+end
+
+/c
+rotation = 0
+for _,ent in pairs(game.player.surface.find_entities_filtered({name="car"})) do
+    ent.orientation = rotation
+    rotation = rotation + 0.05
+end
+
+/c
+local least_x = 0
+for x=0, 5, 0.01 do
+    local test_loco = game.player.surface.create_entity({name="locomotive", position={-91 + x, 19}})
+    if not (test_loco) then
+        game.print(x)
+        return
+    end
+    test_loco.destroy()
+end
+
+/measured-command
+local loco1 = game.player.surface.find_entity("cargo-wagon",{-3.5, -33})
+for x=0, 100000 do
+    loco1.disconnect_rolling_stock(defines.rail_direction.front)
+    loco1.disconnect_rolling_stock(defines.rail_direction.back)
+    loco1.connect_rolling_stock(defines.rail_direction.front)
+    loco1.connect_rolling_stock(defines.rail_direction.back)
+end
+
+/measured-command
+local loco1 = {}
+local surface = game.player.surface
+local create_ent_val = {name="locomotive", position={1,1}}
+for x=0, 10000 do
+    loco1 = surface.create_entity(create_ent_val)
+    loco1.destroy()
 end
