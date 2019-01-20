@@ -6,3 +6,4 @@ Items of note in the repo:
 * factorio_lua_commands.lua: a lot of basic commands that I have used to bend the game state to my will. If a particular command in this file becomes big or useful enough it will be split into a new file exclusively for it.
 * inserter_primer.lua: a lua script to evaluate every inserter in the map. If the inserter needs to be primed, the script will attempt to prime it.
 * profile_benchmark.sh: A bash script to automatically run a callgrind profile on a number of maps which match a $pattern
+* offshore_placer.lua: A lua script that automatically replaces the current water infrastructure of a map into one that directly puts water offshores where needed.
