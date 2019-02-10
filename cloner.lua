@@ -262,15 +262,6 @@ local function find_charting_coordinates(entity_pool)
     return left, right
 end
 
-local function ensure_inserter_stack_valid(pool)
-    for key,ent in pairs(pool) do
-        if not (ent.held_stack.valid) then
-            pool[key] = nil
-            game.players[1].print("held_stack invalid")
-        end
-    end
-end
-
 clean_entity_pool(entity_pool)
 local left_coord_to_chart, right_coord_to_chart = find_charting_coordinates(entity_pool)
 local create_entity_values = {}
