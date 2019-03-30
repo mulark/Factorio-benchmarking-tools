@@ -87,6 +87,46 @@ end
 
 /c
 local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({type="inserter"})) do
+    surface.create_entity{name = ent.name, position = ent.position, force=ent.force, direction= ent.direction}
+end
+
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({type="beacon"})) do
+    local foo = surface.create_entity{name = ent.name, position = ent.position, force=ent.force, direction= ent.direction}
+    foo.insert("speed-module-3")
+end
+
+/c
+local surface=game.player.surface
+script.on_event(defines.events.on_tick,function (e)
+for _, ent in pairs(surface.find_entities_filtered({type="car", area={{0, -12},{2, -10}}})) do
+    game.print(ent.position.x * 256 .. ", " ..  ent.position.y * 256)
+    ent.destroy()
+end
+end)
+
+/c
+script.on_event(defines.events.on_gui_opened,function (e)
+    game.print(e.gui_type .. e.entity.name)
+end)
+
+/c
+local car = game.player.surface.create_entity{name="car", position={-75.5, 56.5}, force="player"}
+script.on_event(defines.events.on_tick,function (e)
+    if (car) then
+        if car.position.x + 0.7 >= -74 then
+            game.print("too far right")
+        end
+        if car.position.x - 0.7 <= -76 then
+            game.print("too far right")
+        end
+    end
+end)
+
+/c
+local surface=game.player.surface
 for key, ent in pairs(surface.find_entities_filtered({})) do
     if string.find(ent.name, "reactor") then
         if (ent.temperature) then
@@ -120,6 +160,14 @@ player.insert("infinity-chest")
 local count = 0
 local surface=game.player.surface
 for key, ent in pairs(surface.find_entities_filtered({force="player", name="solar-panel"})) do
+    count = count + 1
+end
+game.player.print(count)
+
+/c
+local count = 0
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="nuclear-reactor"})) do
     count = count + 1
 end
 game.player.print(count)
@@ -475,6 +523,16 @@ for key, ent in pairs(game.player.selected.train.carriages) do
     ent.clear_items_inside()
 end
 
+/c
+for _, ent in pairs(game.player.surface.find_entities_filtered{name="car"}) do
+    ent.insert({name = "rocket-fuel", count = 5})
+end
+
+/c
+for _, ent in pairs(game.player.surface.find_entities_filtered{name="iron-ore"}) do
+    ent.amount = 100000
+end
+
 
 
 /c
@@ -488,6 +546,7 @@ local surface=game.player.surface
 for key,ent in pairs(surface.find_entities_filtered{name = "car"}) do
     ent.insert("nuclear-fuel")
 end
+
 
 /c
 local surface=game.player.surface
@@ -535,6 +594,14 @@ end)
 local surface=game.player.surface
 for key, ent in pairs (surface.find_entities_filtered{force="player"}) do
     if (ent.position.x > 256) then
+        ent.destroy()
+    end
+end
+
+/c
+local surface=game.player.surface
+for key, ent in pairs (surface.find_entities_filtered{force="player"}) do
+    if (ent.position.y > -19) then
         ent.destroy()
     end
 end
@@ -785,14 +852,67 @@ for _,ent in pairs(game.player.surface.find_entities_filtered{name="roboport"}) 
 end
 
 /c
-local count= 0
 for _,ent in pairs(game.player.surface.find_entities_filtered{}) do
     if (ent.to_be_deconstructed("player")) then
         ent.destroy()
-        game.player.print("X: " .. ent.position.x .. "Y: " .. ent.position.y)
-        game.print("true")
-        count = count + 1
     end
+end
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="steel-chest"}) do
+    ent.get_inventory(defines.inventory.chest).setbar(2)
+end
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="chemical-plant"}) do
+    ent.rotate()
+end
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="steel-chest"}) do
+    ent.clear_items_inside()
+    ent.insert("copper-plate")
+    ent.insert({name="iron-gear-wheel", count="99"})
+end
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="stack-inserter"}) do
+    ent.clear_items_inside()
+end
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="infinity-pipe"}) do
+    ent.set_infinity_pipe_filter({name="light-oil", percentage=1, mode="exactly"})
+end
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="steel-chest"}) do
+    if (ent.position.y == -13.5) then
+        game.player.surface.create_entity{name="infinity-chest", force="player", position = ent.position, fast_replace=true}
+    end
+end
+
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="logistic-chest-buffer"}) do
+        game.player.surface.create_entity{name="infinity-chest", force="player", position = ent.position, fast_replace=true}
+end
+
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="fish") do
+    ent.destroy()
+end
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{force="neutral", type="resource"}) do
+    if (ent.position.y < 5000) then
+        ent.destroy()
+    end
+end
+
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="steel-chest"}) do
+    ent.remove_unfiltered_items = true
 end
 
 /c game.forces.player.chart(game.player.surface, {{x = 0, y = -3000}, {x = 1000, y = 0}})
@@ -957,6 +1077,40 @@ end)
 
 
 /c
+for x=-150, 150 do
+    for y=-150, 150 do
+        local car = game.player.surface.create_entity{name="car", position = {x*8, y*8-1}, force="player", direction = 0}
+        car.active = false
+    end
+end
+
+/c
+for a, b in pairs(game.player.surface.find_entities_filtered({name="car"})) do
+    b.teleport(0, -1/256)
+end
+
+/c
+for a, b in pairs(game.player.surface.find_entities_filtered({name="car"})) do
+    b.active = true
+end
+
+/c
+for _, ent in pairs(game.player.surface.find_entities_filtered({name="express-transport-belt"})) do
+    local y = math.floor(ent.position.y)
+    if (y % 8 == 0) then
+        ent.destroy()
+    end
+end
+
+/c
+local surface = game.player.surface
+for x=-1200,1800 do
+    for y=-150,150 do
+        surface.create_entity({name="express-transport-belt", force="player", position={x,y*8+3}, direction = 2})
+    end
+end
+
+/c
 --[[Note to future self 2750 is more than needed (750 is good enough)]]
 for x=-150,150 do
     for y=-2750,750 do
@@ -965,7 +1119,10 @@ for x=-150,150 do
 end
 
 /c
-game.player.chart(game.player.surface, {{-750, -2750},{750,750}})
+game.player.force.chart(game.player.surface, {{-750, -2750},{750,750}})
+
+/c
+game.player.force.chart(game.player.surface, {{-1024, -1024},{1024,1024}}) game.speed=100
 
 
 /c
@@ -1420,7 +1577,7 @@ function prime_inserters(surface)
 end
 
 /c
-for key,ent in pairs (game.player.surface.find_entities_filtered{}) do
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="car"}) do
     ent.destroy()
 end
 
@@ -1436,8 +1593,22 @@ game.print(count)
 /c game.player.print(serpent.line(game.player.selected.get_control_behavior().enabled))
 
 /c
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="stack-inserter"}) do
+    ent.get_control_behavior().circuit_condition = {condition = {comparator = "=", constant = 1, first_signal = {name="signal-black", type="virtual"}}}
+end
+
+/c
 for key,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
     ent.insert("nuclear-fuel")
+end
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{}) do
+    if (ent.valid) then
+        if (ent.position.y < -160) then
+            ent.destroy()
+        end
+    end
 end
 
 /c
@@ -1481,10 +1652,142 @@ for key,ent in pairs (game.player.surface.find_entities_filtered{name="train-sto
     end
 end
 
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{}) do
+    ent.clear_items_inside()
+end
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="big-worm-turret"}) do
+    ent.force = "enemy"
+end
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{}) do
+    ent.active = false
+end
+
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="electric-mining-drill"}) do
+    if not (ent.mining_target) then
+        game.player.teleport(ent.position)
+    end
+end
+
+
+/c
+local surf = game.player.surface
+for key,ent in pairs (surf.find_entities_filtered{name="electric-mining-drill"}) do
+    for _, res in pairs(surf.find_entities_filtered{name="uranium-ore", area={{ent.position.x-2, ent.position.y-2}, {ent.position.x+2, ent.position.y + 2}}}) do
+        game.print("yes " .. res.position.x .. res.position.y)
+    end
+end
+
 /c
 for key,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
     ent.train.schedule = {current=1, records={{station="far", wait_conditions={{compare_type="or",type="circuit"}}}}}
 end
+
+/c
+--[[Schedule with item count as well]]
+local sched = {current = 1, records = {{station = "1", wait_conditions = {{compare_type = "or", condition = {comparator = "=", constant = 72000, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}, {compare_type = "or", ticks = 8700, type = "time"}}}, {station = "2", wait_conditions = {{compare_type = "or", condition = {comparator = "=", constant = 72000, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}, {compare_type = "or", ticks = 8700, type = "time"}}}}}
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.schedule = sched
+end
+
+/c
+--[[Schedule with item count first]]
+local sched = {current = 1, records = {{station = "1", wait_conditions = {{compare_type = "and", condition = {comparator = "=", constant = 0, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}, {compare_type = "and", ticks = 8700, type = "time"}}}, {station = "2", wait_conditions = {{compare_type = "and", condition = {comparator = "=", constant = 0, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}, {compare_type = "and", ticks = 8700, type = "time"}}}}}
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.schedule = sched
+end
+
+
+
+/c
+--[[Schedule with item count second]]
+local sched = {current = 2, records = {{station = "1", wait_conditions = {{compare_type = "and", ticks = 50000, type = "time"}, {compare_type = "and", condition = {comparator = "=", constant = 0, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}}}, {station = "2", wait_conditions = {{compare_type = "and", ticks = 50000, type = "time"}, {compare_type = "and", condition = {comparator = "=", constant = 0, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}}}}}
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.schedule = sched
+end
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.manual_mode = false
+end
+
+/c
+--[[Schedule with time passed]]
+local sched = {current = 2, records = {{station = "1", wait_conditions = {{compare_type = "and", ticks = 50000, type = "time"}}}, {station = "2", wait_conditions = {{compare_type = "and", ticks = 50000, type = "time"}}}}}
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.schedule = sched
+end
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.manual_mode = false
+end
+
+
+/c
+--[[fluid count AND time passed]]
+local sched = {current = 1, records = {{station = "1", wait_conditions = {{compare_type = "and", condition = {comparator = "=", constant = 0, first_signal = {name = "water", type = "fluid"}}, type = "fluid_count"}, {compare_type = "and", ticks = 8700, type = "time"}}}, {station = "2", wait_conditions = {{compare_type = "and", condition = {comparator = "=", constant = 0, first_signal = {name = "water", type = "fluid"}}, type = "fluid_count"}, {compare_type = "and", ticks = 8700, type = "time"}}}}}
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.schedule = sched
+end
+
+/c
+local sched ={current = 2, records = {{station = "1", wait_conditions = {{compare_type = "and", ticks = 8700, type = "time"}}}, {station = "2", wait_conditions = {{compare_type = "and", ticks = 8700, type = "time"}}}}}
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.schedule = sched
+    ent.train.manual_mode = not ent.train.manual_mode
+end
+
+/c
+for _,ent in pairs(game.player.surface.find_entities_filtered{name="stack-inserter"}) do
+    ent.disconnect_neighbour(defines.wire_type.green)
+end
+
+/c
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.manual_mode = not ent.train.manual_mode
+end
+
+/c
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.train.manual_mode = false
+end
+
+/c
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="cargo-wagon"}) do
+    ent.clear_items_inside()
+end
+
+/c
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="cargo-wagon"}) do
+    local tmpx, tmpy = ent.position.x, ent.position.y
+    ent.destroy()
+    game.player.surface.create_entity{name="fluid-wagon", position={tmpx, tmpy}, force="player"}
+end
+
+
+
+{current = 1,
+ records = {
+     {station = "1", wait_conditions = {{compare_type = "or", condition = {
+         comparator = "=", constant = 72000, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}, {compare_type = "and", ticks = 8700, type = "time"}}},
+     {station = "2", wait_conditions = {{compare_type = "or", condition = {
+         comparator = "=", constant = 0, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}, {compare_type = "and", ticks = 8700, type = "time"}}}}}
+
+{current = 2,
+ records = {
+     {station = "1", wait_conditions = {{compare_type = "or", condition = {
+         comparator = "=", constant = 72000, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}}},
+     {station = "2", wait_conditions = {{compare_type = "or", condition = {
+         comparator = "=", constant = 0, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}}}}}
+
+
+
+/c
+game.write_file("foo", serpent.line(game.player.selected.train.schedule))
 
 
 /c
@@ -1497,6 +1800,38 @@ script.on_event(defines.events.on_tick, function(event)
             ent.train.front_stock.disconnect_rolling_stock(defines.rail_direction.back)
         end
     end
+end)
+
+
+/c
+local surf = game.surfaces[1]
+script.on_event(defines.events.on_tick, function(event)
+    surf.force_generate_chunk_requests()
+end)
+
+
+/c
+for _, ent in pairs(game.player.surface.find_entities_filtered({force="player"})) do
+    for x=1, 100 do
+        ent.insert("landfill")
+    end
+end
+
+/c
+--[[0.17]]
+script.on_event(defines.events.on_tick, function(event)
+    game.print(sel.get_fluid_count())
+    sel.clear_fluid_inside()
+end)
+
+
+/c
+--[[0.16]]
+script.on_event(defines.events.on_tick, function(event)
+    local fb = sel.fluidbox[1]
+    game.print(fb.amount)
+    fb.amount = 0
+    sel.fluidbox[1] = fb
 end)
 
 /c
@@ -1682,6 +2017,18 @@ for key,ent in pairs (game.player.surface.find_entities_filtered{name="locomotiv
 end
 
 /c
+for _,ent in pairs (game.player.surface.find_entities_filtered({type = "transport-belt"})) do
+    game.print(ent.name)
+    ent.clear_items_inside()
+end
+
+/c
+for _,ent in pairs (game.player.surface.find_entities_filtered({})) do
+    game.print(ent.name)
+    ent.active = false
+end
+
+/c
 local tiles={}
 for x=0,31 do
     for y=0,31 do
@@ -1713,6 +2060,22 @@ end)
 /c
 for _, ent in pairs(game.player.surface.find_entities_filtered({name="substation"})) do
     ent.disconnect_neighbour()
+end
+
+/c
+for _, ent in pairs(game.player.surface.find_entities_filtered({name="stack-inserter"})) do
+    ent.destroy()
+end
+
+/c
+--[[item-on-ground but not really]]
+for _, ent in pairs(game.player.surface.find_entities_filtered({type="item-entity"})) do
+    ent.destroy()
+end
+
+/c
+for _, ent in pairs(game.player.surface.find_entities_filtered({name="infinity-chest"})) do
+    ent.destroy()
 end
 
 /c
