@@ -25,6 +25,30 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
 end
 
 /c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="express-transport-belt"})) do
+    if (math.ceil(ent.position.y) % 8 == 1) then
+        ent.destroy()
+    end
+end
+
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="express-transport-belt"})) do
+    if (math.ceil(ent.position.y) % 8 == 1) then
+        local pos = ent.position
+        ent.destroy()
+        surface.create_entity{name="item-on-ground", position=pos, stack={name="iron-plate"}}
+    end
+end
+
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="car"})) do
+    ent.active = true
+end
+
+/c
 local player = game.player
 local function get_region_bounding_box(player)
     local bounding_box = {}
@@ -1122,7 +1146,7 @@ end
 game.player.force.chart(game.player.surface, {{-750, -2750},{750,750}})
 
 /c
-game.player.force.chart(game.player.surface, {{-1024, -1024},{1024,1024}}) game.speed=100
+game.player.force.chart(game.player.surface, {{-1280, -1280},{1280,1280}}) game.speed=100
 
 
 /c
@@ -1144,9 +1168,9 @@ end
 
 /c
 local tiles={}
-for x=-55,50 do
-    for y=-700,150 do
-        table.insert(tiles, {name = "refined-concrete", position = {x,y}})
+for x=-1024,1023 do
+    for y=-1024,1023 do
+        table.insert(tiles, {name = "lab-dark-1", position = {x,y}})
     end
 end
 game.player.surface.set_tiles(tiles, false)
@@ -1443,17 +1467,14 @@ for key,ent in pairs(surface.find_entities_filtered{force="player"}) do
 
 
 /c local surface = game.player.surface
-for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
-    if (ent.type == "entity-ghost") then
-        revived = ent.revive()
-    end
+for key, ent in pairs(surface.find_entities_filtered({force="player", type="entity-ghost"})) do
+    revived = ent.revive()
 end
-for key, ent in pairs(surface.find_entities_filtered({surface=game.player.surface})) do
+for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
     if (ent.to_be_deconstructed(game.player.force)) then
         ent.destroy()
     end
-end
-for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
+    if ent.valid then
     if (ent.type == "item-request-proxy") then
         for key, req in  pairs (ent.item_requests) do
             game.player.print(key .. req)
@@ -1461,6 +1482,7 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
             ent.item_requests = nil
         end
     end
+end
 end
 
 /measured-command
@@ -1590,12 +1612,16 @@ game.print(count)
 
 /c game.player.print(serpent.line(game.player.selected.get_control_behavior().get_signal(1)))
 
+/c game.player.print(serpent.line(game.player.selected.get_control_behavior().set_signal(1,
+{count=59, signal={name="signal-A", type="virtual"}})))
+
 /c game.player.print(serpent.line(game.player.selected.get_control_behavior().enabled))
 
 /c
 for _,ent in pairs(game.player.surface.find_entities_filtered{name="stack-inserter"}) do
     ent.get_control_behavior().circuit_condition = {condition = {comparator = "=", constant = 1, first_signal = {name="signal-black", type="virtual"}}}
 end
+
 
 /c
 for key,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
@@ -1628,7 +1654,7 @@ game.player.force.chart_all()
 
 
 /c
---[[Print the game tick when trains start/stop]]
+--[[Print the game tick when trains start/stop/start braking]]
 script.on_event(defines.events.on_train_changed_state,function(event)
     game.print(game.tick)
 end)
@@ -1674,6 +1700,33 @@ for key,ent in pairs (game.player.surface.find_entities_filtered{name="electric-
     if not (ent.mining_target) then
         game.player.teleport(ent.position)
     end
+end
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="stack-filter-inserter"}) do
+    if not ent.pickup_target or not ent.drop_target then
+        ent.disconnect_neighbour(defines.wire_type.green)
+        ent.disconnect_neighbour(defines.wire_type.red)
+        game.player.surface.create_entity{position=ent.position, name="stack-inserter", fast_replace=true, direction = ent.direction, force = ent.force, spill=false}
+    end
+    if (ent.valid) then
+    if (ent.pickup_target) then
+        if ent.pickup_target.type == "cargo-wagon" then
+            ent.disconnect_neighbour(defines.wire_type.green)
+            ent.disconnect_neighbour(defines.wire_type.red)
+            game.player.surface.create_entity{position=ent.position, name="stack-inserter", fast_replace=true, direction = ent.direction, force = ent.force, spill=false}
+        end
+    end
+    end
+    if (ent.valid) then
+    if (ent.drop_target) then
+        if ent.drop_target.type == "cargo-wagon" then
+            ent.disconnect_neighbour(defines.wire_type.green)
+            ent.disconnect_neighbour(defines.wire_type.red)
+            game.player.surface.create_entity{position=ent.position, name="stack-inserter", fast_replace=true, direction = ent.direction, force = ent.force, spill=false}
+        end
+    end
+end
 end
 
 
@@ -1809,6 +1862,20 @@ script.on_event(defines.events.on_tick, function(event)
     surf.force_generate_chunk_requests()
 end)
 
+/c
+script.on_event(defines.events.on_tick, function(event)
+    if (game.tick == 90000) then
+        game.auto_save()
+    end
+end)
+
+
+
+/c
+script.on_event(defines.events.on_tick, function(event)
+    local foo="bar"
+end)
+
 
 /c
 for _, ent in pairs(game.player.surface.find_entities_filtered({force="player"})) do
@@ -1870,6 +1937,12 @@ end
 
 /c
 for key,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
+    ent.destroy()
+end
+
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{name="uranium-ore"}) do
     ent.destroy()
 end
 
@@ -2044,6 +2117,7 @@ for _, ent in pairs(game.player.surface.find_entities_filtered{name = "beacon"})
     ent.destroy()
 end
 for _, ent in pairs(game.player.surface.find_entities_filtered{type = "inserter"}) do
+    ent.active = false
     ent.active = true
 end
 local start = game.tick
