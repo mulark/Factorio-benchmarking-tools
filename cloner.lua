@@ -1,7 +1,7 @@
 /silent-command
 
 --[[
-It is reccomended to use the region cloner mod instead of this script.
+It is recomended to use the region cloner mod instead of this script.
 There are a small number of this for which this script is useful for, but it is unmaintained.
 ]]
 
