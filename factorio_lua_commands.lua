@@ -223,6 +223,21 @@ game.forces["player"].chart(surface, {{x = -110, y = -3830}, {x = 671, y = 0}})
 
 /c
 local surface= game.player.surface
+game.forces["player"].chart(surface, {{x = -768, y = -768}, {x = 768, y = 768}})
+
+/c
+local surface= game.player.surface
+game.forces["player"].chart(surface, {{x = game.player.position.x-640, y = game.player.position.y-640}, {x = game.player.position.x+640, y = game.player.position.y+640}})
+
+/c
+script.on_event(defines.events.on_tick, function(event)
+    if (game.tick == 95000) then
+        game.auto_save("")
+    end
+end)
+
+/c
+local surface= game.player.surface
 game.forces["player"].chart(surface, {{x = -876, y = -22700}, {x = 200, y = 0}})
 
 
@@ -1864,7 +1879,7 @@ end)
 
 /c
 script.on_event(defines.events.on_tick, function(event)
-    if (game.tick == 90000) then
+    if (game.tick == 92000) then
         game.auto_save()
     end
 end)
