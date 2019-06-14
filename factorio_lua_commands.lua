@@ -26,6 +26,20 @@ end
 
 /c
 local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", type="container"})) do
+    if not (ent.get_inventory(defines.inventory.chest)[1].valid_for_read) then
+        game.players[1].teleport(ent.position)
+    end
+end
+
+/c
+local surface=game.player.surface
+for key, ent in pairs(surface.find_entities_filtered({force="player", name="infinity-chest", area={{-1294, 945}, {-1235, 953}}})) do
+    game.player.surface.create_entity({name="steel-chest", force="player", position=ent.position, spill=false, fast_replace=true})
+end
+
+/c
+local surface=game.player.surface
 for key, ent in pairs(surface.find_entities_filtered({force="player", name="express-transport-belt"})) do
     if (math.ceil(ent.position.y) % 8 == 1) then
         ent.destroy()
@@ -212,6 +226,12 @@ for key, ent in pairs(surface.find_entities_filtered({force={"neutral", "enemy"}
 end
 game.player.print(count)
 
+/c
+script.on_event(defines.events.on_tick, function(event)
+    for _,ent in pairs(game.surfaces[1].find_entities_filtered{area={{-100,-100},{100,100}}}) do
+        game.print(ent.name)
+    end
+end)
 
 /c game.player.insert("dummy-selection-tool")
 script.on_event(defines.events.on_player_selected_area, function(args) game.print(serpent.line(args.area)) end)
@@ -1693,6 +1713,61 @@ for key,ent in pairs (game.player.surface.find_entities_filtered{name="train-sto
     end
 end
 
+/c
+--[["N/S/E/W"]]
+local connect_red = true
+local connect_green = false
+--[[local connect_copper = true TODO]]
+local direction_to_search = "N"
+local current_ent = game.player.selected
+local x_heading = 0
+local y_heading = 0
+if (direction_to_search == "N") then
+    y_heading = -1
+elseif (direction_to_search == "S") then
+    y_heading = 1
+elseif (direction_to_search == "W") then
+    x_heading = -1
+elseif (direction_to_search == "E") then
+    x_heading = 1
+end
+function find_entity_in_wire_reach(source_ent, x_heading, y_heading)
+    local i=1
+    local possible_found_ent
+    while (not possible_found_ent and i <= source_ent.prototype.max_circuit_wire_distance) do
+        possible_found_ent = source_ent.surface.find_entity(source_ent.name, {current_ent.position.x + x_heading*i, current_ent.position.y + y_heading*i})
+        i= i + 1
+    end
+    if (possible_found_ent) then
+        return possible_found_ent
+    else
+        return nil
+    end
+end
+local possible_found_ent = find_entity_in_wire_reach(current_ent, x_heading, y_heading)
+while (possible_found_ent) do
+    if (connect_red) then
+        current_ent.connect_neighbour({target_entity=possible_found_ent, wire=defines.wire_type.red})
+    end
+    if (connect_green) then
+        current_ent.connect_neighbour({target_entity=possible_found_ent, wire=defines.wire_type.green})
+    end
+    current_ent = possible_found_ent
+    possible_found_ent = find_entity_in_wire_reach(current_ent, x_heading, y_heading)
+end
+
+
+/c
+for _, ent in pairs (game.player.surface.find_entities_filtered({position=game.player.selected.position})) do
+    game.print(ent.name)
+end
+
+/c
+for _,ent in pairs (game.player.surface.find_entities_filtered{name="stack-filter-inserter"}) do
+    if (ent.pickup_target) then
+        ent.pickup_target.insert("space-science-pack")
+    end
+end
 
 /c
 for key,ent in pairs (game.player.surface.find_entities_filtered{}) do
@@ -1759,11 +1834,73 @@ for key,ent in pairs (game.player.surface.find_entities_filtered{name="locomotiv
 end
 
 /c
---[[Schedule with item count as well]]
-local sched = {current = 1, records = {{station = "1", wait_conditions = {{compare_type = "or", condition = {comparator = "=", constant = 72000, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}, {compare_type = "or", ticks = 8700, type = "time"}}}, {station = "2", wait_conditions = {{compare_type = "or", condition = {comparator = "=", constant = 72000, first_signal = {name = "iron-plate", type = "item"}}, type = "item_count"}, {compare_type = "or", ticks = 8700, type = "time"}}}}}
-for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
-    ent.train.schedule = sched
-end
+local sched = {--[[Full copy paste goes here]]}
+game.player.selected.train.schedule = sched
+
+/c
+local sched = {current = 1, records = {
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 1", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 2", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 3", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 4", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 5", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 6", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 7", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 8", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 9", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 10", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 11", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 12", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 13", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 14", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 15", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 16", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 2", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 3", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 4", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 5", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 6", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 7", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 8", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 9", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 10", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 11", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 12", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 13", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 14", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore pick", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}},
+    {station = "iron-ore drop 15", wait_conditions = {{compare_type = "or", ticks = 60, type = "inactivity"}}}
+}}
+game.player.selected.train.schedule = sched
 
 /c
 --[[Schedule with item count first]]
@@ -1793,6 +1930,8 @@ end
 for _,ent in pairs (game.player.surface.find_entities_filtered{name="locomotive"}) do
     ent.train.manual_mode = false
 end
+
+
 
 
 /c
