@@ -25,6 +25,15 @@ for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
 end
 
 /c
+local screen = game.player.gui.screen
+local mod_frame = screen.add{type="frame", name="control-window", caption="", direction="vertical"}
+local title_flow = mod_frame.add{type="frame"}
+local title = title_flow.add{type="label", caption="Region Cloner"}
+local drag = title_flow.add{type="empty-widget"}
+drag.drag_target = mod_frame
+
+
+/c
 local surface=game.player.surface
 for key, ent in pairs(surface.find_entities_filtered({force="player", type="container"})) do
     if not (ent.get_inventory(defines.inventory.chest)[1].valid_for_read) then
@@ -34,7 +43,7 @@ end
 
 /c
 local surface=game.player.surface
-for key, ent in pairs(surface.find_entities_filtered({force="player", name="infinity-chest", area={{-1294, 945}, {-1235, 953}}})) do
+for _, ent in pairs(surface.find_entities_filtered({force="player", name="infinity-chest"})) do
     game.player.surface.create_entity({name="steel-chest", force="player", position=ent.position, spill=false, fast_replace=true})
 end
 
@@ -1498,12 +1507,21 @@ end
 
 /c local surface = game.player.surface
 for key,ent in pairs(surface.find_entities_filtered{force="player"}) do
+end
+
+/c local surface = game.player.surface
+for key,ent in pairs(surface.find_entities_filtered{force="player", name={"big-electric-pole"}}) do
+    ent.die()
+end
 
 
 
 /c local surface = game.player.surface
 for key, ent in pairs(surface.find_entities_filtered({force="player", type="entity-ghost"})) do
     revived = ent.revive()
+    if not (revived) then
+        revived = surface.create_entity({name=ent.ghost_name, position=ent.position, force=ent.force, fast_replace=true})
+    end
 end
 for key, ent in pairs(surface.find_entities_filtered({force="player"})) do
     if (ent.to_be_deconstructed(game.player.force)) then
@@ -1718,7 +1736,7 @@ end
 local connect_red = true
 local connect_green = false
 --[[local connect_copper = true TODO]]
-local direction_to_search = "N"
+local direction_to_search = "E"
 local current_ent = game.player.selected
 local x_heading = 0
 local y_heading = 0
@@ -1756,10 +1774,38 @@ while (possible_found_ent) do
     possible_found_ent = find_entity_in_wire_reach(current_ent, x_heading, y_heading)
 end
 
+/c for _, car in pairs(game.player.surface.find_entities_filtered{name = "car"}) do
+    if (car.orientation == 0.5) then
+        car.orientation = 0
+    end
+end
+
 
 /c
-for _, ent in pairs (game.player.surface.find_entities_filtered({position=game.player.selected.position})) do
-    game.print(ent.name)
+function copy_circuit_connections (original_entity, cloned_entity, surface)
+    if (original_entity.circuit_connection_definitions) then
+        for x=1, #original_entity.circuit_connection_definitions do
+            local targetent = original_entity.circuit_connection_definitions[x].target_entity
+            local offset_x = (original_entity.position.x - targetent.position.x)
+            local offset_y = (original_entity.position.y - targetent.position.y)
+            local targetnewent = surface.find_entity(targetent.name, {(cloned_entity.position.x - offset_x), (cloned_entity.position.y - offset_y)})
+            if (targetnewent) then
+                cloned_entity.connect_neighbour({target_entity = targetnewent, wire=original_entity.circuit_connection_definitions[x].wire, source_circuit_id=original_entity.circuit_connection_definitions[x].source_circuit_id, target_circuit_id=original_entity.circuit_connection_definitions[x].target_circuit_id})
+            end
+            targetent = nil
+            offset_x = nil
+            offset_y = nil
+            targetnewent = nil
+        end
+    end
+end
+
+for _, ent in pairs (game.player.surface.find_entities_filtered({name="arithmetic-combinator"})) do
+    local decider = ent.surface.create_entity({name="decider-combinator", position=ent.position, force=ent.force, direction=ent.direction})
+    if (decider) then
+        copy_circuit_connections (ent, decider, ent.surface)
+    end
+    ent.destroy()
 end
 
 /c
@@ -1772,6 +1818,11 @@ end
 /c
 for key,ent in pairs (game.player.surface.find_entities_filtered{}) do
     ent.clear_items_inside()
+end
+
+/c
+for key,ent in pairs (game.player.surface.find_entities_filtered{area={{80,-1024},{96,0}}}) do
+    ent.teleport(16,0)
 end
 
 /c
@@ -2038,8 +2089,10 @@ for _, ent in pairs(game.player.surface.find_entities_filtered({force="player"})
     end
 end
 
+
 /c
---[[0.17]]
+sel = game.player.selected
+/c
 script.on_event(defines.events.on_tick, function(event)
     game.print(sel.get_fluid_count())
     sel.clear_fluid_inside()
