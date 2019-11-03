@@ -17,7 +17,7 @@ local function first_pass_throw_away_unneeded_inserters(pool)
     local freshpool = {}
     for key, ent in pairs (pool) do
         if (ent.pickup_target) then
-            if has_value(ent.pickup_target.type, {"underground-belt", "transport-belt", "furnace"}) then
+            if has_value(ent.pickup_target.type, {"underground-belt", "transport-belt", "furnace", "assembling-machine"}) then
                 if (ent.drop_target) then
                     if has_value(ent.drop_target.type, {"container", "car"}) then
                         table.insert(freshpool, ent)
@@ -77,7 +77,7 @@ local function check_primed_inserter (ent)
                 end
             end
         end
-        if has_value(ent.pickup_target.type, {"furnace"}) then
+        if has_value(ent.pickup_target.type, {"furnace", "assembling-machine"}) then
             if ent.pickup_target.get_recipe() then
                 item_to_hold = ent.pickup_target.get_recipe().name
             end
