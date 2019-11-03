@@ -65,8 +65,8 @@ local function check_primed_inserter (ent)
     if not (ent.held_stack.valid_for_read) then
         local item_to_hold = ""
         --[[TODO: check if this actually works for no items on belt]]
-        --This breaks when there are two items on a belt but we are priming the one on transport line 1
-        --Could read if this is a filter inserter, use that as priming name
+        --[[This breaks when there are two items on a belt but we are priming the one on transport line 1]]
+        --[[Could read if this is a filter inserter, use that as priming name]]
         if has_value(ent.pickup_target.type, {"transport-belt", "underground-transport-belt"}) then
             for name, _ in pairs (ent.pickup_target.get_transport_line(2).get_contents()) do
                 item_to_hold = name
