@@ -65,6 +65,8 @@ local function check_primed_inserter (ent)
     if not (ent.held_stack.valid_for_read) then
         local item_to_hold = ""
         --[[TODO: check if this actually works for no items on belt]]
+        --This breaks when there are two items on a belt but we are priming the one on transport line 1
+        --Could read if this is a filter inserter, use that as priming name
         if has_value(ent.pickup_target.type, {"transport-belt", "underground-transport-belt"}) then
             for name, _ in pairs (ent.pickup_target.get_transport_line(2).get_contents()) do
                 item_to_hold = name
@@ -96,6 +98,9 @@ local function check_primed_inserter (ent)
                 end
             end
         end
+        if item_to_hold == "" then
+            return false
+        end
         local items_inside = ent.drop_target.get_item_count(item_to_hold)
         local slots = ent.drop_target.get_inventory(defines.inventory.chest).getbar() - 1
         local item_capacity = slots * game.item_prototypes[item_to_hold].stack_size
@@ -116,6 +121,7 @@ local inserters_to_prime = {}
 inserters_to_prime = first_pass_throw_away_unneeded_inserters(inserter_pool)
 for key,ent in pairs (inserters_to_prime) do
     if not (check_primed_inserter(ent)) then
+        game.player.teleport(ent.position)
         primed_inserters = primed_inserters + 1
         if (ent.held_stack.valid_for_read) then
             ent.drop_target.remove_item({name = ent.held_stack.name, amount = 1})
