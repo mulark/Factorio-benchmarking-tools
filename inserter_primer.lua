@@ -19,7 +19,7 @@ local function first_pass_throw_away_unneeded_inserters(pool)
         if (ent.pickup_target) then
             if has_value(ent.pickup_target.type, {"underground-belt", "transport-belt"}) then
                 if (ent.drop_target) then
-                    if (ent.drop_target.type == "container") then
+                    if has_value(ent.drop_target.type, {"container", "car"}) then
                         table.insert(freshpool, ent)
                     end
                 end
