@@ -17,7 +17,7 @@ local function first_pass_throw_away_unneeded_inserters(pool)
     local freshpool = {}
     for key, ent in pairs (pool) do
         if (ent.pickup_target) then
-            if has_value(ent.pickup_target.type, {"underground-belt", "transport-belt"}) then
+            if has_value(ent.pickup_target.type, {"underground-belt", "transport-belt", "furnace"}) then
                 if (ent.drop_target) then
                     if has_value(ent.drop_target.type, {"container", "car"}) then
                         table.insert(freshpool, ent)
@@ -34,7 +34,9 @@ local function check_primed_inserter (ent)
         return true
     end
     if not (ent.held_stack.valid) then
-        game.players[1].teleport(ent.position)
+        for _,p in pairs(game.connected_players) do
+            p.teleport(ent.position)
+        end
     end
     if (ent.held_stack.valid_for_read) then
         if (ent.held_stack.prototype.stack_size == 1) then
@@ -63,19 +65,35 @@ local function check_primed_inserter (ent)
     if not (ent.held_stack.valid_for_read) then
         local item_to_hold = ""
         --[[TODO: check if this actually works for no items on belt]]
-        for name, _ in pairs (ent.pickup_target.get_transport_line(2).get_contents()) do
-            item_to_hold = name
-        end
-        if (item_to_hold == "") then
-            for name, _ in pairs (ent.pickup_target.get_transport_line(1).get_contents()) do
+        if has_value(ent.pickup_target.type, {"transport-belt", "underground-transport-belt"}) then
+            for name, _ in pairs (ent.pickup_target.get_transport_line(2).get_contents()) do
                 item_to_hold = name
+            end
+            if (item_to_hold == "") then
+                for name, _ in pairs (ent.pickup_target.get_transport_line(1).get_contents()) do
+                    item_to_hold = name
+                end
+            end
+        end
+        if has_value(ent.pickup_target.type, {"furnace"}) then
+            if ent.pickup_target.get_recipe() then
+                item_to_hold = ent.pickup_target.get_recipe().name
             end
         end
         if (item_to_hold == "") then
-            if (ent.drop_target.get_inventory(defines.inventory.chest)[1].valid_for_read) then
-                item_to_hold = ent.drop_target.get_inventory(defines.inventory.chest)[1].name
-            else
-                return true
+            if ent.type == "container" then
+                if (ent.drop_target.get_inventory(defines.inventory.chest)[1].valid_for_read) then
+                    item_to_hold = ent.drop_target.get_inventory(defines.inventory.chest)[1].name
+                else
+                    return true
+                end
+            end
+            if ent.type == "car" then
+                if (ent.drop_target.get_inventory(defines.inventory.car_trunk)[1].valid_for_read) then
+                    item_to_hold = ent.drop_target.get_inventory(defines.inventory.chest)[1].name
+                else
+                    return true
+                end
             end
         end
         local items_inside = ent.drop_target.get_item_count(item_to_hold)
