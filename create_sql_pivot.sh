@@ -135,3 +135,5 @@ printf ";\n" >> pivot.sql
 echo "Genereated SQL to pivot.sql, running query."
 
 cat pivot.sql | sqlite3 results.db -cmd ".mode csv" -cmd ".headers on" > data.csv
+
+echo "Finished query. Data in data.csv"
