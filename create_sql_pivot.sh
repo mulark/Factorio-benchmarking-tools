@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Intended for use with factorio-benchmark-helper's results.db file
+# Interim solution until proper dumping is added to it.
+
 > pivot.sql
 
 sqlite3 results.db "select * from collection;"
